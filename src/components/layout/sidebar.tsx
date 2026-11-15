@@ -94,27 +94,32 @@ export function Sidebar({
       {/* Main Sidebar */}
       <aside
         className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col justify-between border-r transition-all duration-300 ease-in-out
-          bg-[var(--surface-deep)] border-[var(--border-color)]
+          bg-[var(--surface-deep)] border-[var(--border-color)] no-scrollbar sidebar-no-scrollbar
           ${isCollapsed ? "md:w-20" : "md:w-64"}
           ${mobileOpen ? "translate-x-0 w-72" : "-translate-x-full md:translate-x-0"}
         `}
       >
         {/* TOP SECTION: Branding & Collapse Toggle */}
         <div className="flex flex-col">
-          <div className="flex items-center justify-between h-16 px-4 border-b border-[var(--border-color)]">
-            <Link
-              href="/"
-              className="flex items-center gap-3 overflow-hidden group focus:outline-none"
-              onClick={() => setMobileOpen?.(false)}
-            >
-              {/* Vault Logo Mark */}
-              <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-950/60 border border-emerald-500/30 text-emerald-400 group-hover:border-emerald-400 transition-all shadow-sm">
-                <Shield className="w-5 h-5 text-emerald-400" />
-                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-[var(--surface-deep)]" />
-              </div>
+          <div
+            className={`flex items-center h-16 border-b border-[var(--border-color)] transition-all ${
+              isCollapsed ? "justify-center px-0" : "justify-between px-4"
+            }`}
+          >
+            {/* Expanded mode: show Logo & Brand text */}
+            {!isCollapsed && (
+              <Link
+                href="/"
+                className="flex items-center gap-3 overflow-hidden group focus:outline-none"
+                onClick={() => setMobileOpen?.(false)}
+              >
+                {/* Vault Logo Mark */}
+                <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-950/60 border border-emerald-500/30 text-emerald-400 group-hover:border-emerald-400 transition-all shadow-sm flex-shrink-0">
+                  <Shield className="w-5 h-5 text-emerald-400" />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-[var(--surface-deep)]" />
+                </div>
 
-              {/* Brand Name & Tagline */}
-              {!isCollapsed && (
+                {/* Brand Name & Tagline */}
                 <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-1.5">
                     <span className="text-base font-bold tracking-tight text-white">Faculty Vault</span>
@@ -126,18 +131,22 @@ export function Sidebar({
                     Academic Records ERP
                   </span>
                 </div>
-              )}
-            </Link>
+              </Link>
+            )}
 
-            {/* Collapse/Expand Toggle Button (Desktop) */}
+            {/* Collapse/Expand Toggle Button: when collapsed, ONLY this button is visible at the top */}
             <button
               onClick={toggleCollapse}
               aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-              className="hidden md:flex items-center justify-center w-8 h-8 rounded-lg text-[var(--text-secondary)] hover:text-white hover:bg-[var(--surface-elevated)] border border-transparent hover:border-[var(--border-color)] transition-all"
+              className={`flex items-center justify-center rounded-xl text-[var(--text-secondary)] hover:text-white hover:bg-[var(--surface-elevated)] border border-transparent hover:border-[var(--border-color)] transition-all ${
+                isCollapsed
+                  ? "w-10 h-10 bg-[var(--surface-elevated)]/70 text-emerald-400 border-[var(--border-color)] shadow-sm"
+                  : "hidden md:flex w-8 h-8"
+              }`}
               title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {isCollapsed ? (
-                <PanelLeftOpen className="w-4 h-4 text-emerald-400" />
+                <PanelLeftOpen className="w-5 h-5 text-emerald-400" />
               ) : (
                 <PanelLeftClose className="w-4 h-4" />
               )}
@@ -155,7 +164,7 @@ export function Sidebar({
           )}
 
           {/* PRIMARY NAVIGATION */}
-          <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-250px)]">
+          <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto no-scrollbar sidebar-no-scrollbar max-h-[calc(100vh-250px)]">
             {allNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href || pathname?.startsWith(item.href + "/");
