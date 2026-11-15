@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Raleway:ital,wght@0,600;0,700;0,800;0,900;1,700;1,800;1,900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -60,12 +62,22 @@
   box-sizing: border-box;
 }
 
+html {
+  font-size: 16.5px; /* Enhanced base font size for improved UI readability */
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-feature-settings: "rlig" 1, "calt" 1;
   min-height: 100vh;
   overflow-x: hidden;
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
 /* Custom scrollbar for dark/technical aesthetic */
@@ -105,4 +117,9 @@ body {
 
 .glow-subtle {
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+}
+
+/* Google Raleway brand font utility */
+.font-raleway {
+  font-family: 'Raleway', sans-serif;
 }

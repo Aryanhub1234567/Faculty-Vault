@@ -49,24 +49,24 @@ export function Header({ onOpenMobileSidebar, onOpenAddRecord }: HeaderProps) {
   ].includes(pathname);
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 md:px-8 border-b bg-[var(--surface-main)]/80 backdrop-blur-md border-[var(--border-color)]">
+    <header className="sticky top-0 z-30 flex items-center justify-between h-18 px-4 md:px-8 border-b bg-[var(--surface-main)]/85 backdrop-blur-md border-[var(--border-color)]">
       {/* Left: Mobile hamburger + Page Title */}
       <div className="flex items-center gap-3">
         <button
           onClick={onOpenMobileSidebar}
-          className="flex items-center justify-center w-9 h-9 rounded-lg md:hidden text-[var(--text-secondary)] hover:text-white hover:bg-[var(--surface-elevated)] border border-[var(--border-color)]"
+          className="flex items-center justify-center w-10 h-10 rounded-xl md:hidden text-[var(--text-secondary)] hover:text-white hover:bg-[var(--surface-elevated)] border border-[var(--border-color)]"
           aria-label="Open navigation menu"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <h1 className="text-base font-semibold tracking-tight text-white">
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-lg md:text-xl font-bold tracking-tight text-white">
               {currentMeta.title}
             </h1>
             <span className="hidden sm:inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span className="hidden sm:inline-block text-xs text-[var(--text-secondary)]">
+            <span className="hidden sm:inline-block text-sm text-[var(--text-secondary)] font-medium">
               {currentMeta.subtitle}
             </span>
           </div>
@@ -77,12 +77,12 @@ export function Header({ onOpenMobileSidebar, onOpenAddRecord }: HeaderProps) {
       <div className="flex items-center gap-3">
         {/* Prominent Global Academic Session Selector */}
         <div className="relative flex items-center">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--surface-card)] border border-[var(--border-color)] hover:border-emerald-500/40 transition-all text-xs">
-            <Calendar className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-            <span className="text-[var(--text-muted)] hidden sm:inline">Session:</span>
+          <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[var(--surface-card)] border border-[var(--border-color)] hover:border-emerald-500/40 transition-all text-sm">
+            <Calendar className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+            <span className="text-[var(--text-muted)] font-medium hidden sm:inline">Session:</span>
 
             {isLoading ? (
-              <span className="text-white animate-pulse">Loading...</span>
+              <span className="text-white animate-pulse font-medium">Loading...</span>
             ) : (
               <select
                 aria-label="Academic session filter"
@@ -91,20 +91,20 @@ export function Header({ onOpenMobileSidebar, onOpenAddRecord }: HeaderProps) {
                   const found = sessions.find((s) => s.id === e.target.value);
                   if (found) setSelectedSession(found);
                 }}
-                className="bg-transparent text-white font-medium focus:outline-none cursor-pointer pr-4 appearance-none"
+                className="bg-transparent text-white font-semibold focus:outline-none cursor-pointer pr-5 appearance-none text-sm"
               >
                 {sessions.map((s) => (
                   <option
                     key={s.id}
                     value={s.id}
-                    className="bg-[var(--surface-deep)] text-white"
+                    className="bg-[var(--surface-deep)] text-white font-medium"
                   >
                     {s.name} {s.isCurrent ? "★ (Current)" : ""}
                   </option>
                 ))}
               </select>
             )}
-            <ChevronDown className="w-3 h-3 text-[var(--text-muted)] pointer-events-none -ml-3" />
+            <ChevronDown className="w-3.5 h-3.5 text-[var(--text-muted)] pointer-events-none -ml-4" />
           </div>
         </div>
 
@@ -112,9 +112,9 @@ export function Header({ onOpenMobileSidebar, onOpenAddRecord }: HeaderProps) {
         {isModulePage && onOpenAddRecord && (
           <button
             onClick={onOpenAddRecord}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-sm transition-all"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.99]"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Add Record</span>
           </button>
         )}

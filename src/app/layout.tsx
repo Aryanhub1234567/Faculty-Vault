@@ -5,7 +5,7 @@ import { Providers } from "@/components/providers";
 export const metadata: Metadata = {
   title: "Faculty Vault — Academic Records & Document Management",
   description:
-    "Production-quality academic records and document management system for engineering institutes. Every Achievement. One Secure Vault.",
+    "Production-quality academic records and document management system for engineering institutes. Your Academic Journey. One Secure Vault.",
   icons: {
     icon: "/favicon.ico",
   },

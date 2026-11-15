@@ -78,21 +78,21 @@ export function DocumentPreviewModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative flex flex-col w-full max-w-5xl h-[88vh] bg-[var(--surface-card)] border border-[var(--border-color)] rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-color)] bg-[var(--surface-deep)]">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+        <div className="flex items-center justify-between px-6 py-4.5 border-b border-[var(--border-color)] bg-[var(--surface-deep)]">
+          <div className="flex items-center gap-3.5">
+            <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
               <FileCheck className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-white">
+              <div className="flex items-center gap-2.5">
+                <span className="text-base font-bold text-white">
                   {currentAttachment?.fileName || "Document Preview"}
                 </span>
-                <span className="px-2 py-0.5 text-[10px] font-mono rounded bg-[var(--surface-elevated)] border border-[var(--border-color)] text-emerald-400">
+                <span className="px-2.5 py-0.5 text-xs font-mono font-bold rounded bg-[var(--surface-elevated)] border border-[var(--border-color)] text-emerald-400">
                   {record.recordCode}
                 </span>
               </div>
-              <p className="text-xs text-[var(--text-secondary)]">
+              <p className="text-xs text-[var(--text-secondary)] mt-0.5">
                 {formatFileSize(currentAttachment?.fileSize || 0)} • {record.academicSession?.name} • {record.category.replace("_", " ")}
               </p>
             </div>
@@ -101,21 +101,21 @@ export function DocumentPreviewModal({
           <div className="flex items-center gap-2">
             {/* Zoom Controls for Images & PDFs */}
             {(isImage || isPdf) && (
-              <div className="flex items-center gap-1 px-2 py-1 bg-[var(--surface-elevated)] rounded-lg border border-[var(--border-color)] text-xs">
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[var(--surface-elevated)] rounded-xl border border-[var(--border-color)] text-xs">
                 <button
                   onClick={() => setZoomLevel((z) => Math.max(50, z - 25))}
                   className="p-1 text-[var(--text-secondary)] hover:text-white"
                   title="Zoom Out"
                 >
-                  <ZoomOut className="w-3.5 h-3.5" />
+                  <ZoomOut className="w-4 h-4" />
                 </button>
-                <span className="px-1 text-[11px] font-mono text-[var(--text-muted)]">{zoomLevel}%</span>
+                <span className="px-1 text-xs font-mono text-[var(--text-muted)] font-medium">{zoomLevel}%</span>
                 <button
                   onClick={() => setZoomLevel((z) => Math.min(200, z + 25))}
                   className="p-1 text-[var(--text-secondary)] hover:text-white"
                   title="Zoom In"
                 >
-                  <ZoomIn className="w-3.5 h-3.5" />
+                  <ZoomIn className="w-4 h-4" />
                 </button>
               </div>
             )}
@@ -126,16 +126,16 @@ export function DocumentPreviewModal({
                 href={currentAttachment.webViewLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-white transition-all"
+                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-[var(--surface-elevated)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-white transition-all"
               >
-                <ExternalLink className="w-3.5 h-3.5" />
+                <ExternalLink className="w-4 h-4" />
                 <span className="hidden sm:inline">Drive</span>
               </a>
             )}
 
             <button
               onClick={onClose}
-              className="p-1.5 text-[var(--text-secondary)] hover:text-white rounded-lg hover:bg-[var(--surface-elevated)] transition-all"
+              className="p-2 text-[var(--text-secondary)] hover:text-white rounded-xl hover:bg-[var(--surface-elevated)] transition-all"
             >
               <X className="w-5 h-5" />
             </button>
@@ -238,20 +238,20 @@ export function DocumentPreviewModal({
           <div className="w-80 border-l border-[var(--border-color)] bg-[var(--surface-main)] flex flex-col justify-between overflow-y-auto p-5">
             <div className="space-y-5">
               <div>
-                <span className="text-[10px] font-semibold tracking-wider uppercase text-[var(--text-muted)]">
+                <span className="text-xs font-bold tracking-wider uppercase text-[var(--text-muted)]">
                   Record Metadata
                 </span>
                 <div className="mt-3 space-y-3">
                   <div>
-                    <span className="text-[11px] text-[var(--text-secondary)]">Faculty Member</span>
-                    <p className="text-xs font-semibold text-white">
+                    <span className="text-xs text-[var(--text-secondary)] font-medium">Faculty Member</span>
+                    <p className="text-sm font-bold text-white">
                       {record.facultyProfile?.name} ({record.facultyProfile?.facultyId})
                     </p>
                   </div>
 
                   <div>
-                    <span className="text-[11px] text-[var(--text-secondary)]">Academic Session</span>
-                    <p className="text-xs font-medium text-emerald-400 font-mono">
+                    <span className="text-xs text-[var(--text-secondary)] font-medium">Academic Session</span>
+                    <p className="text-sm font-semibold text-emerald-400 font-mono">
                       {record.academicSession?.name}
                     </p>
                   </div>
@@ -260,20 +260,20 @@ export function DocumentPreviewModal({
                   {record.category === "BOOK" && record.bookDetails && (
                     <>
                       <div>
-                        <span className="text-[11px] text-[var(--text-secondary)]">Book Status</span>
-                        <p className="text-xs font-medium text-white">
+                        <span className="text-xs text-[var(--text-secondary)] font-medium">Book Status</span>
+                        <p className="text-sm font-bold text-white">
                           {record.bookDetails.status === "AUTHORED" ? "Authored Monograph" : "Edited Volume"}
                         </p>
                       </div>
                       <div>
-                        <span className="text-[11px] text-[var(--text-secondary)]">ISBN Number</span>
-                        <p className="text-xs font-mono font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 inline-block">
+                        <span className="text-xs text-[var(--text-secondary)] font-medium">ISBN Number</span>
+                        <p className="text-sm font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/20 inline-block">
                           {record.bookDetails.isbn}
                         </p>
                       </div>
                       <div>
-                        <span className="text-[11px] text-[var(--text-secondary)]">Publication Date</span>
-                        <p className="text-xs text-white">
+                        <span className="text-xs text-[var(--text-secondary)] font-medium">Publication Date</span>
+                        <p className="text-sm text-white font-medium">
                           {record.bookDetails.date ? new Date(record.bookDetails.date).toLocaleDateString() : "N/A"}
                         </p>
                       </div>
@@ -283,8 +283,8 @@ export function DocumentPreviewModal({
                   {/* Conference details */}
                   {record.conferenceDetails && (
                     <div>
-                      <span className="text-[11px] text-[var(--text-secondary)]">Organizer & Scope</span>
-                      <p className="text-xs text-white">
+                      <span className="text-xs text-[var(--text-secondary)] font-medium">Organizer & Scope</span>
+                      <p className="text-sm text-white font-medium">
                         {record.conferenceDetails.organizer} ({record.conferenceDetails.nationality})
                       </p>
                     </div>
@@ -293,8 +293,8 @@ export function DocumentPreviewModal({
                   {/* Patent details */}
                   {record.patentDetails && (
                     <div>
-                      <span className="text-[11px] text-[var(--text-secondary)]">Patent Type & Status</span>
-                      <p className="text-xs text-white">
+                      <span className="text-xs text-[var(--text-secondary)] font-medium">Patent Type & Status</span>
+                      <p className="text-sm text-white font-medium">
                         {record.patentDetails.type} • {record.patentDetails.status}
                       </p>
                     </div>
@@ -303,10 +303,10 @@ export function DocumentPreviewModal({
                   {/* Research article details */}
                   {record.researchArticleDetails && (
                     <div>
-                      <span className="text-[11px] text-[var(--text-secondary)]">Publisher & Indexing</span>
-                      <p className="text-xs text-white">
+                      <span className="text-xs text-[var(--text-secondary)] font-medium">Publisher & Indexing</span>
+                      <p className="text-sm text-white font-medium">
                         {record.researchArticleDetails.publisher} (
-                        <span className="text-emerald-400 font-semibold">
+                        <span className="text-emerald-400 font-bold">
                           {record.researchArticleDetails.indexing}
                         </span>
                         )
@@ -319,21 +319,21 @@ export function DocumentPreviewModal({
               {/* Attachments Switcher if multi-file */}
               {attachments.length > 1 && (
                 <div className="pt-4 border-t border-[var(--border-color)]">
-                  <span className="text-[10px] font-semibold tracking-wider uppercase text-[var(--text-muted)]">
+                  <span className="text-xs font-bold tracking-wider uppercase text-[var(--text-muted)]">
                     All Files ({attachments.length})
                   </span>
-                  <div className="mt-2 space-y-1.5">
+                  <div className="mt-2.5 space-y-1.5">
                     {attachments.map((att, idx) => (
                       <button
                         key={att.id}
                         onClick={() => setActiveAttachmentIdx(idx)}
-                        className={`w-full flex items-center gap-2 p-2 rounded-lg text-left text-xs transition-all ${
+                        className={`w-full flex items-center gap-2 p-2.5 rounded-xl text-left text-sm transition-all ${
                           idx === activeAttachmentIdx
-                            ? "bg-emerald-500/10 border border-emerald-500/30 text-white font-medium"
+                            ? "bg-emerald-500/10 border border-emerald-500/30 text-white font-semibold"
                             : "bg-[var(--surface-card)] hover:bg-[var(--surface-elevated)] text-[var(--text-secondary)]"
                         }`}
                       >
-                        <FileText className="w-3.5 h-3.5 flex-shrink-0 text-emerald-400" />
+                        <FileText className="w-4 h-4 flex-shrink-0 text-emerald-400" />
                         <span className="truncate flex-1">{att.fileName}</span>
                       </button>
                     ))}
@@ -342,8 +342,8 @@ export function DocumentPreviewModal({
               )}
             </div>
 
-            <div className="pt-4 border-t border-[var(--border-color)] text-[11px] text-[var(--text-muted)] flex items-center gap-2">
-              <Shield className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+            <div className="pt-4 border-t border-[var(--border-color)] text-xs text-[var(--text-muted)] flex items-center gap-2 font-medium">
+              <Shield className="w-4 h-4 text-emerald-400 flex-shrink-0" />
               <span>Drive Protected Storage</span>
             </div>
           </div>

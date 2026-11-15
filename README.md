@@ -1,5 +1,5 @@
 # Faculty Vault
-> **Every Achievement. One Secure Vault.**
+> **Your Academic Journey. One Secure Vault.**
 
 **Faculty Vault** is a production-quality, academic records and document management system built for engineering institutes. It provides faculty members with a personal ERP workspace to organize, upload, manage, preview, search, and track their academic achievements, research publications, patents, conference presentations, FDPs, books, and book chapters.
 

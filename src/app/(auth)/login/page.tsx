@@ -40,25 +40,25 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-6 relative z-10 animate-in fade-in zoom-in-95 duration-300">
         {/* Brand Logo & Heading */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-950/60 border border-emerald-500/30 text-emerald-400 shadow-emerald ring-1 ring-emerald-500/20">
-            <Shield className="w-7 h-7 text-emerald-400" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-950/60 border border-emerald-500/30 text-emerald-400 shadow-emerald ring-1 ring-emerald-500/20">
+            <Shield className="w-8 h-8 text-emerald-400" />
           </div>
 
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-white">
+            <h1 className="text-3xl font-extrabold tracking-tight text-white">
               Faculty Vault
             </h1>
-            <p className="text-xs text-[var(--text-secondary)] mt-1 font-medium">
-              Every Achievement. One Secure Vault.
+            <p className="font-raleway text-base md:text-lg text-[var(--text-secondary)] mt-1.5 font-bold tracking-wide">
+              Your Academic Journey. One Secure Vault.
             </p>
           </div>
         </div>
 
         {/* Main Card */}
-        <div className="p-8 rounded-2xl bg-[var(--surface-card)]/90 backdrop-blur-xl border border-[var(--border-color)] shadow-2xl space-y-6">
-          <div className="space-y-1 text-center">
-            <h2 className="text-sm font-semibold text-white">Sign In to Academic Workspace</h2>
-            <p className="text-xs text-[var(--text-secondary)]">
+        <div className="p-8 sm:p-9 rounded-2xl bg-[var(--surface-card)]/90 backdrop-blur-xl border border-[var(--border-color)] shadow-2xl space-y-6">
+          <div className="space-y-1.5 text-center">
+            <h2 className="text-base font-bold text-white">Sign In to Academic Workspace</h2>
+            <p className="text-sm text-[var(--text-secondary)]">
               Use your institutional Google account for identity verification.
             </p>
           </div>
@@ -67,12 +67,12 @@ export default function LoginPage() {
           <button
             onClick={handleGoogleSignIn}
             disabled={isLoadingGoogle}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs transition-all shadow-md active:scale-[0.99] disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-3 px-5 py-3.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm sm:text-base transition-all shadow-md hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
           >
             {isLoadingGoogle ? (
-              <span className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
+              <span className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
             ) : (
-              <svg className="w-4 h-4" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -97,31 +97,31 @@ export default function LoginPage() {
           {/* Institutional Single Sign-On Divider */}
           <div className="relative flex items-center justify-center">
             <div className="border-t border-[var(--border-color)] w-full" />
-            <span className="bg-[var(--surface-card)] px-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)] absolute">
+            <span className="bg-[var(--surface-card)] px-3 text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] absolute">
               Instant Dev / Demo Access
             </span>
           </div>
 
           {/* Quick-Switch Accounts for Evaluator Testing */}
-          <div className="space-y-2">
-            <span className="text-[11px] text-[var(--text-muted)] block text-center">
+          <div className="space-y-2.5">
+            <span className="text-xs text-[var(--text-muted)] block text-center font-medium">
               One-click access with seeded database accounts:
             </span>
 
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-1 gap-2.5">
               <button
                 onClick={() => handleDevSignIn("admin@facultyvault.edu", "ADMIN")}
                 disabled={Boolean(selectedQuickRole)}
-                className="w-full flex items-center justify-between p-3 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border-color)] hover:border-emerald-500/40 text-left transition-all text-xs group"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border-color)] hover:border-emerald-500/40 text-left transition-all text-sm group"
               >
                 <div>
-                  <div className="font-semibold text-white flex items-center gap-1.5">
-                    <span>Dean / Administrator</span>
-                    <span className="px-1.5 py-0.2 rounded text-[9px] bg-emerald-500/10 text-emerald-400 font-mono">
+                  <div className="font-bold text-white flex items-center gap-2">
+                    <span className="text-sm">Dean / Administrator</span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 font-mono">
                       ADMIN
                     </span>
                   </div>
-                  <div className="text-[11px] text-[var(--text-secondary)] font-mono">
+                  <div className="text-xs text-[var(--text-secondary)] font-mono mt-0.5">
                     admin@facultyvault.edu
                   </div>
                 </div>
@@ -131,16 +131,16 @@ export default function LoginPage() {
               <button
                 onClick={() => handleDevSignIn("dr.sharma@facultyvault.edu", "FACULTY")}
                 disabled={Boolean(selectedQuickRole)}
-                className="w-full flex items-center justify-between p-3 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border-color)] hover:border-emerald-500/40 text-left transition-all text-xs group"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border-color)] hover:border-emerald-500/40 text-left transition-all text-sm group"
               >
                 <div>
-                  <div className="font-semibold text-white flex items-center gap-1.5">
-                    <span>Dr. Rajesh Sharma</span>
-                    <span className="px-1.5 py-0.2 rounded text-[9px] bg-emerald-500/10 text-emerald-400 font-mono">
+                  <div className="font-bold text-white flex items-center gap-2">
+                    <span className="text-sm">Dr. Rajesh Sharma</span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 font-mono">
                       F001
                     </span>
                   </div>
-                  <div className="text-[11px] text-[var(--text-secondary)] font-mono">
+                  <div className="text-xs text-[var(--text-secondary)] font-mono mt-0.5">
                     dr.sharma@facultyvault.edu
                   </div>
                 </div>
@@ -150,16 +150,16 @@ export default function LoginPage() {
               <button
                 onClick={() => handleDevSignIn("dr.mehta@facultyvault.edu", "FACULTY")}
                 disabled={Boolean(selectedQuickRole)}
-                className="w-full flex items-center justify-between p-3 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border-color)] hover:border-amber-500/40 text-left transition-all text-xs group"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border-color)] hover:border-amber-500/40 text-left transition-all text-sm group"
               >
                 <div>
-                  <div className="font-semibold text-white flex items-center gap-1.5">
-                    <span>Dr. Vikram Mehta</span>
-                    <span className="px-1.5 py-0.2 rounded text-[9px] bg-amber-500/10 text-amber-300 font-mono">
+                  <div className="font-bold text-white flex items-center gap-2">
+                    <span className="text-sm">Dr. Vikram Mehta</span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-300 font-mono">
                       PENDING
                     </span>
                   </div>
-                  <div className="text-[11px] text-[var(--text-secondary)] font-mono">
+                  <div className="text-xs text-[var(--text-secondary)] font-mono mt-0.5">
                     dr.mehta@facultyvault.edu
                   </div>
                 </div>
@@ -170,7 +170,7 @@ export default function LoginPage() {
         </div>
 
         {/* Security / Architecture Footer */}
-        <div className="text-center text-[11px] text-[var(--text-muted)] space-y-1">
+        <div className="text-center text-xs text-[var(--text-muted)] space-y-1">
           <p>Protected by institutional role-based access control (RBAC).</p>
           <p>PostgreSQL Database • Private Shared Drive • Sheets Reporting Outbox</p>
         </div>

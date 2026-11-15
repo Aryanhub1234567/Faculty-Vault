@@ -161,35 +161,35 @@ export default function DashboardPage() {
         {/* Hero Welcome Banner */}
         <div className="relative overflow-hidden p-6 md:p-8 rounded-2xl bg-gradient-to-r from-[var(--surface-card)] via-[var(--surface-elevated)] to-[var(--surface-deep)] border border-[var(--border-color)]">
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-2.5">
+                <span className="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   Academic Session: {selectedSession?.name || "2026-27"}
                 </span>
-                <span className="text-xs text-[var(--text-muted)]">•</span>
-                <span className="text-xs text-[var(--text-secondary)]">
+                <span className="text-sm text-[var(--text-muted)]">•</span>
+                <span className="text-sm font-medium text-[var(--text-secondary)]">
                   {user?.name || "Faculty Member"}
                 </span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
+              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white">
                 Welcome to Faculty Vault
               </h1>
-              <p className="text-xs md:text-sm text-[var(--text-secondary)] max-w-2xl leading-relaxed">
+              <p className="text-sm md:text-base text-[var(--text-secondary)] max-w-2xl leading-relaxed">
                 Centralized ERP workspace for organizing research, patents, journal articles, books, and conference documents. Every upload is automatically mapped into your institutional Google Drive folder hierarchy and synchronized with Google Sheets reporting.
               </p>
             </div>
 
             {/* Quick Metrics Cards */}
             <div className="flex items-center gap-4">
-              <div className="p-4 rounded-xl bg-[var(--surface-deep)] border border-[var(--border-color)] min-w-[120px] text-center">
-                <span className="text-[10px] uppercase font-semibold text-[var(--text-muted)]">Records</span>
-                <div className="text-2xl font-bold text-white font-mono mt-1">
+              <div className="p-4 sm:p-5 rounded-xl bg-[var(--surface-deep)] border border-[var(--border-color)] min-w-[130px] text-center">
+                <span className="text-xs uppercase font-bold text-[var(--text-muted)] tracking-wider">Records</span>
+                <div className="text-3xl font-extrabold text-white font-mono mt-1.5">
                   {isLoading ? "..." : dashboardData.stats.totalRecords}
                 </div>
               </div>
-              <div className="p-4 rounded-xl bg-[var(--surface-deep)] border border-[var(--border-color)] min-w-[120px] text-center">
-                <span className="text-[10px] uppercase font-semibold text-[var(--text-muted)]">Documents</span>
-                <div className="text-2xl font-bold text-emerald-400 font-mono mt-1">
+              <div className="p-4 sm:p-5 rounded-xl bg-[var(--surface-deep)] border border-[var(--border-color)] min-w-[130px] text-center">
+                <span className="text-xs uppercase font-bold text-[var(--text-muted)] tracking-wider">Documents</span>
+                <div className="text-3xl font-extrabold text-emerald-400 font-mono mt-1.5">
                   {isLoading ? "..." : dashboardData.stats.totalAttachments}
                 </div>
               </div>
@@ -200,10 +200,10 @@ export default function DashboardPage() {
         {/* 6 Category Modules Grid */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold tracking-tight text-white uppercase text-[var(--text-muted)]">
+            <h2 className="text-sm font-bold tracking-tight text-white uppercase text-[var(--text-muted)]">
               Academic Modules ({selectedSession?.name})
             </h2>
-            <span className="text-xs text-[var(--text-secondary)]">Click to explore and manage category records</span>
+            <span className="text-xs sm:text-sm text-[var(--text-secondary)]">Click to explore and manage category records</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -213,7 +213,7 @@ export default function DashboardPage() {
                 <Link
                   key={cat.title}
                   href={cat.href}
-                  className="group relative p-5 rounded-xl bg-[var(--surface-card)] border border-[var(--border-color)] hover:border-emerald-500/40 transition-all duration-200 hover:shadow-lg flex flex-col justify-between"
+                  className="group relative p-5 sm:p-6 rounded-2xl bg-[var(--surface-card)] border border-[var(--border-color)] hover:border-emerald-500/40 transition-all duration-200 hover:shadow-lg flex flex-col justify-between hover:scale-[1.01]"
                 >
                   <div className="flex items-start justify-between">
                     <div className={`p-3 rounded-xl bg-gradient-to-br ${cat.color} border`}>
@@ -224,14 +224,14 @@ export default function DashboardPage() {
 
                   <div className="mt-4">
                     <div className="flex items-baseline justify-between">
-                      <h3 className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors">
+                      <h3 className="text-base font-bold text-white group-hover:text-emerald-400 transition-colors">
                         {cat.title}
                       </h3>
-                      <span className="text-base font-bold font-mono text-white">
+                      <span className="text-lg font-bold font-mono text-white">
                         {isLoading ? "-" : cat.count}
                       </span>
                     </div>
-                    <p className="text-xs text-[var(--text-secondary)] mt-1">{cat.desc}</p>
+                    <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-1">{cat.desc}</p>
                   </div>
                 </Link>
               );
@@ -244,22 +244,22 @@ export default function DashboardPage() {
           {/* Left: Recent Records List */}
           <div className="lg:col-span-2 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold tracking-tight text-white uppercase text-[var(--text-muted)]">
+              <h2 className="text-sm font-bold tracking-tight text-white uppercase text-[var(--text-muted)]">
                 Recent Records in {selectedSession?.name}
               </h2>
             </div>
 
-            <div className="rounded-xl border border-[var(--border-color)] bg-[var(--surface-card)] divide-y divide-[var(--border-color)] overflow-hidden">
+            <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--surface-card)] divide-y divide-[var(--border-color)] overflow-hidden">
               {isLoading ? (
-                <div className="p-8 text-center text-xs text-[var(--text-muted)]">
+                <div className="p-8 text-center text-sm text-[var(--text-muted)]">
                   Loading recent uploads...
                 </div>
               ) : dashboardData.records.length === 0 ? (
-                <div className="p-8 text-center text-xs text-[var(--text-muted)] space-y-2">
+                <div className="p-8 text-center text-sm text-[var(--text-muted)] space-y-3">
                   <p>No records found in session {selectedSession?.name}.</p>
                   <Link
                     href="/conference"
-                    className="inline-block px-3 py-1.5 text-xs font-semibold rounded bg-emerald-500 text-slate-950 hover:bg-emerald-400 transition-all"
+                    className="inline-block px-4 py-2 text-xs font-bold rounded-lg bg-emerald-500 text-slate-950 hover:bg-emerald-400 transition-all shadow-sm"
                   >
                     Upload First Record
                   </Link>
@@ -278,28 +278,28 @@ export default function DashboardPage() {
                   return (
                     <div
                       key={rec.id}
-                      className="flex items-center justify-between p-4 hover:bg-[var(--surface-elevated)] transition-colors"
+                      className="flex items-center justify-between p-4 sm:p-4.5 hover:bg-[var(--surface-elevated)] transition-colors"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="p-2 rounded-lg bg-[var(--surface-deep)] border border-[var(--border-color)] text-emerald-400 flex-shrink-0">
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className="p-2.5 rounded-xl bg-[var(--surface-deep)] border border-[var(--border-color)] text-emerald-400 flex-shrink-0">
                           <FileCheck className="w-4 h-4" />
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-white truncate max-w-md">
+                            <span className="text-sm font-bold text-white truncate max-w-md">
                               {title}
                             </span>
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <span className="px-2 py-0.5 rounded text-xs font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                               {rec.recordCode}
                             </span>
                           </div>
-                          <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">
+                          <p className="text-xs text-[var(--text-secondary)] mt-0.5">
                             {rec.category.replace("_", " ")} • {rec.attachments?.length || 0} attachments
                           </p>
                         </div>
                       </div>
 
-                      <div className="text-[11px] text-[var(--text-muted)] whitespace-nowrap ml-4">
+                      <div className="text-xs text-[var(--text-muted)] whitespace-nowrap ml-4 font-medium">
                         {new Date(rec.createdAt).toLocaleDateString()}
                       </div>
                     </div>
@@ -311,38 +311,38 @@ export default function DashboardPage() {
 
           {/* Right: Architecture & Storage Status */}
           <div className="space-y-3">
-            <h2 className="text-sm font-semibold tracking-tight text-white uppercase text-[var(--text-muted)]">
+            <h2 className="text-sm font-bold tracking-tight text-white uppercase text-[var(--text-muted)]">
               Vault Architecture Status
             </h2>
 
-            <div className="p-5 rounded-xl border border-[var(--border-color)] bg-[var(--surface-card)] space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex-shrink-0">
+            <div className="p-6 rounded-2xl border border-[var(--border-color)] bg-[var(--surface-card)] space-y-4">
+              <div className="flex items-start gap-3.5">
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex-shrink-0">
                   <HardDrive className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-semibold text-white">Google Workspace Shared Drive</h4>
-                  <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">
+                  <h4 className="text-sm font-bold text-white">Google Workspace Shared Drive</h4>
+                  <p className="text-xs text-[var(--text-secondary)] mt-0.5 leading-relaxed">
                     Structured folders automatically maintained by session and category.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex-shrink-0">
+              <div className="flex items-start gap-3.5">
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex-shrink-0">
                   <FileSpreadsheet className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-semibold text-white">Google Sheets Reporting Layer</h4>
-                  <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">
+                  <h4 className="text-sm font-bold text-white">Google Sheets Reporting Layer</h4>
+                  <p className="text-xs text-[var(--text-secondary)] mt-0.5 leading-relaxed">
                     Asynchronous Outbox pattern with automatic retry and duplicate row prevention.
                   </p>
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-[var(--border-color)] flex items-center justify-between text-[11px] text-[var(--text-muted)]">
+              <div className="pt-3.5 border-t border-[var(--border-color)] flex items-center justify-between text-xs text-[var(--text-muted)]">
                 <span>Database: PostgreSQL</span>
-                <span className="text-emerald-400 font-medium">Source of Truth</span>
+                <span className="text-emerald-400 font-semibold">Source of Truth</span>
               </div>
             </div>
           </div>

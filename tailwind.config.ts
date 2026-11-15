@@ -44,7 +44,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "Inter", "sans-serif"],
+        sans: ["'Manrope'", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+        raleway: ["'Raleway'", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        brand: ["'Raleway'", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
         mono: ["var(--font-mono)", "monospace"],
       },
       boxShadow: {

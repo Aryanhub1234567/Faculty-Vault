@@ -248,21 +248,21 @@ export default function AdminPage() {
     <AppLayout>
       <div className="space-y-6 animate-in fade-in duration-300">
         {/* Admin Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[var(--surface-card)] border border-[var(--border-color)]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-7 rounded-2xl bg-[var(--surface-card)] border border-[var(--border-color)]">
           <div className="flex items-center gap-4">
-            <div className="p-3.5 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-950/40 border border-emerald-500/30 text-emerald-400">
+            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-950/40 border border-emerald-500/30 text-emerald-400">
               <ShieldCheck className="w-7 h-7" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-white">
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-2xl font-bold tracking-tight text-white">
                   Institutional Governance Console
                 </h1>
-                <span className="px-2 py-0.5 text-xs font-semibold rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span className="px-2.5 py-0.5 text-xs font-semibold rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   Admin Scope
                 </span>
               </div>
-              <p className="text-xs text-[var(--text-secondary)] mt-1">
+              <p className="text-sm text-[var(--text-secondary)] mt-1">
                 Manage faculty onboarding approvals, institutional academic sessions, Google Sheets synchronization, and audit activity.
               </p>
             </div>
@@ -277,9 +277,9 @@ export default function AdminPage() {
                 fetchSyncJobs();
                 fetchAuditLogs();
               }}
-              className="flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-color)] text-white hover:border-emerald-500/30 transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl bg-[var(--surface-elevated)] border border-[var(--border-color)] text-white hover:border-emerald-500/30 transition-all hover:bg-[var(--surface-card)]"
             >
-              <RefreshCw className="w-3.5 h-3.5 text-emerald-400" />
+              <RefreshCw className="w-4 h-4 text-emerald-400" />
               <span>Refresh Metrics</span>
             </button>
           </div>
@@ -287,53 +287,53 @@ export default function AdminPage() {
 
         {/* Overview Metric Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-5 rounded-xl bg-[var(--surface-card)] border border-[var(--border-color)]">
-            <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase">
+          <div className="p-5 sm:p-6 rounded-2xl bg-[var(--surface-card)] border border-[var(--border-color)]">
+            <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
               Total Faculty
             </span>
-            <div className="text-2xl font-bold font-mono text-white mt-1">
+            <div className="text-3xl font-extrabold font-mono text-white mt-1.5">
               {stats?.totalFaculty || 0}
             </div>
-            <div className="text-[11px] text-[var(--text-secondary)] mt-1">
+            <div className="text-xs font-medium text-[var(--text-secondary)] mt-1">
               Registered academic profiles
             </div>
           </div>
 
-          <div className="p-5 rounded-xl bg-[var(--surface-card)] border border-[var(--border-color)]">
-            <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase">
+          <div className="p-5 sm:p-6 rounded-2xl bg-[var(--surface-card)] border border-[var(--border-color)]">
+            <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
               Pending Approvals
             </span>
-            <div className="text-2xl font-bold font-mono text-amber-400 mt-1">
+            <div className="text-3xl font-extrabold font-mono text-amber-400 mt-1.5">
               {stats?.pendingApprovals || 0}
             </div>
-            <div className="text-[11px] text-[var(--text-secondary)] mt-1">
+            <div className="text-xs font-medium text-[var(--text-secondary)] mt-1">
               Awaiting admin review
             </div>
           </div>
 
-          <div className="p-5 rounded-xl bg-[var(--surface-card)] border border-[var(--border-color)]">
-            <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase">
+          <div className="p-5 sm:p-6 rounded-2xl bg-[var(--surface-card)] border border-[var(--border-color)]">
+            <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
               Total Records
             </span>
-            <div className="text-2xl font-bold font-mono text-emerald-400 mt-1">
+            <div className="text-3xl font-extrabold font-mono text-emerald-400 mt-1.5">
               {stats?.totalRecords || 0}
             </div>
-            <div className="text-[11px] text-[var(--text-secondary)] mt-1">
+            <div className="text-xs font-medium text-[var(--text-secondary)] mt-1">
               Across all 6 categories
             </div>
           </div>
 
-          <div className="p-5 rounded-xl bg-[var(--surface-card)] border border-[var(--border-color)]">
-            <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase">
+          <div className="p-5 sm:p-6 rounded-2xl bg-[var(--surface-card)] border border-[var(--border-color)]">
+            <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
               Sheets Sync Queue
             </span>
-            <div className="text-2xl font-bold font-mono text-white mt-1 flex items-center gap-2">
+            <div className="text-3xl font-extrabold font-mono text-white mt-1.5 flex items-center gap-2">
               <span>{stats?.totalSyncJobs || 0}</span>
               {stats?.failedSyncJobs > 0 && (
-                <span className="text-xs text-rose-400">({stats.failedSyncJobs} failed)</span>
+                <span className="text-xs font-semibold text-rose-400">({stats.failedSyncJobs} failed)</span>
               )}
             </div>
-            <div className="text-[11px] text-[var(--text-secondary)] mt-1">
+            <div className="text-xs font-medium text-[var(--text-secondary)] mt-1">
               Google Sheets reporting jobs
             </div>
           </div>
@@ -343,7 +343,7 @@ export default function AdminPage() {
         <div className="flex border-b border-[var(--border-color)] space-x-1">
           <button
             onClick={() => setActiveTab("faculty")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all ${
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition-all ${
               activeTab === "faculty"
                 ? "border-emerald-500 text-emerald-400"
                 : "border-transparent text-[var(--text-secondary)] hover:text-white"
@@ -355,7 +355,7 @@ export default function AdminPage() {
 
           <button
             onClick={() => setActiveTab("sessions")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all ${
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition-all ${
               activeTab === "sessions"
                 ? "border-emerald-500 text-emerald-400"
                 : "border-transparent text-[var(--text-secondary)] hover:text-white"
@@ -367,7 +367,7 @@ export default function AdminPage() {
 
           <button
             onClick={() => setActiveTab("sync")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all ${
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition-all ${
               activeTab === "sync"
                 ? "border-emerald-500 text-emerald-400"
                 : "border-transparent text-[var(--text-secondary)] hover:text-white"
@@ -379,7 +379,7 @@ export default function AdminPage() {
 
           <button
             onClick={() => setActiveTab("audit")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all ${
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition-all ${
               activeTab === "audit"
                 ? "border-emerald-500 text-emerald-400"
                 : "border-transparent text-[var(--text-secondary)] hover:text-white"
@@ -393,26 +393,26 @@ export default function AdminPage() {
         {/* TAB 1: FACULTY MANAGEMENT & APPROVALS */}
         {activeTab === "faculty" && (
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-[var(--surface-deep)] border border-[var(--border-color)]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-[var(--surface-deep)] border border-[var(--border-color)]">
               <div className="relative flex-1 max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
                 <input
                   type="text"
                   placeholder="Search faculty by name, email, ID, department..."
                   value={facultySearch}
                   onChange={(e) => setFacultySearch(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && fetchFaculty()}
-                  className="w-full pl-9 pr-4 py-1.5 rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-xs text-white placeholder-[var(--text-muted)] focus:outline-none focus:border-emerald-500"
+                  className="w-full pl-10 pr-4 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--border-color)] text-sm text-white placeholder-[var(--text-muted)] focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <select
                   value={facultyStatusFilter}
                   onChange={(e) => {
                     setFacultyStatusFilter(e.target.value);
                   }}
-                  className="px-3 py-1.5 rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-xs text-white focus:outline-none focus:border-emerald-500"
+                  className="px-3.5 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--border-color)] text-sm text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
                 >
                   <option value="ALL">All Statuses</option>
                   <option value="PENDING">Pending Approval</option>
@@ -422,46 +422,46 @@ export default function AdminPage() {
 
                 <button
                   onClick={fetchFaculty}
-                  className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-500 text-slate-950 hover:bg-emerald-400 transition-all"
+                  className="px-4 py-2 text-sm font-bold rounded-xl bg-emerald-500 text-slate-950 hover:bg-emerald-400 transition-all shadow-sm"
                 >
                   Search
                 </button>
               </div>
             </div>
 
-            <div className="rounded-xl border border-[var(--border-color)] bg-[var(--surface-card)] overflow-hidden">
-              <table className="w-full text-left border-collapse text-xs">
+            <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--surface-card)] overflow-hidden">
+              <table className="w-full text-left border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-[var(--border-color)] bg-[var(--surface-deep)] text-[11px] font-semibold uppercase text-[var(--text-muted)]">
-                    <th className="py-3 px-4">Faculty Member</th>
-                    <th className="py-3 px-4">ID & Department</th>
-                    <th className="py-3 px-4">Role</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Records</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
+                  <tr className="border-b border-[var(--border-color)] bg-[var(--surface-deep)] text-xs font-bold uppercase text-[var(--text-muted)]">
+                    <th className="py-3.5 px-4">Faculty Member</th>
+                    <th className="py-3.5 px-4">ID & Department</th>
+                    <th className="py-3.5 px-4">Role</th>
+                    <th className="py-3.5 px-4">Status</th>
+                    <th className="py-3.5 px-4">Records</th>
+                    <th className="py-3.5 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border-color)]">
                   {facultyList.map((u) => {
                     const fp = u.facultyProfile;
                     return (
-                      <tr key={u.id} className="hover:bg-[var(--surface-elevated)]/50">
-                        <td className="py-3.5 px-4">
-                          <div className="font-semibold text-white">{u.name || "Unnamed"}</div>
-                          <div className="text-[11px] text-[var(--text-secondary)]">{u.email}</div>
+                      <tr key={u.id} className="hover:bg-[var(--surface-elevated)]/50 transition-colors">
+                        <td className="py-4 px-4">
+                          <div className="font-bold text-white">{u.name || "Unnamed"}</div>
+                          <div className="text-xs text-[var(--text-secondary)]">{u.email}</div>
                         </td>
-                        <td className="py-3.5 px-4">
-                          <div className="font-mono text-emerald-400 font-medium">
+                        <td className="py-4 px-4">
+                          <div className="font-mono text-emerald-400 font-bold">
                             {fp?.facultyId || "Not Registered"}
                           </div>
-                          <div className="text-[11px] text-[var(--text-secondary)]">
+                          <div className="text-xs text-[var(--text-secondary)]">
                             {fp?.department || "No department"}
                           </div>
                         </td>
-                        <td className="py-3.5 px-4 font-mono">{u.role}</td>
-                        <td className="py-3.5 px-4">
+                        <td className="py-4 px-4 font-mono font-medium">{u.role}</td>
+                        <td className="py-4 px-4">
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${
+                            className={`px-2.5 py-0.5 rounded text-xs font-bold uppercase ${
                               u.accountStatus === "APPROVED"
                                 ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                                 : u.accountStatus === "PENDING"
@@ -472,27 +472,27 @@ export default function AdminPage() {
                             {u.accountStatus}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 font-mono">
+                        <td className="py-4 px-4 font-mono font-semibold">
                           {u._count?.recordsCreated || 0}
                         </td>
-                        <td className="py-3.5 px-4 text-right">
+                        <td className="py-4 px-4 text-right">
                           {u.accountStatus === "PENDING" ? (
                             <div className="flex items-center justify-end gap-2">
                               <button
                                 onClick={() => handleApproval(u.id, "APPROVED")}
-                                className="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 text-xs font-semibold transition-all"
+                                className="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 text-xs font-bold transition-all"
                               >
                                 Approve
                               </button>
                               <button
                                 onClick={() => handleApproval(u.id, "REJECTED")}
-                                className="px-2.5 py-1 rounded bg-rose-500/20 text-rose-300 hover:bg-rose-500 hover:text-white text-xs font-semibold transition-all"
+                                className="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500 hover:text-white text-xs font-bold transition-all"
                               >
                                 Reject
                               </button>
                             </div>
                           ) : (
-                            <span className="text-[11px] text-[var(--text-muted)]">Verified</span>
+                            <span className="text-xs font-medium text-[var(--text-muted)]">Verified</span>
                           )}
                         </td>
                       </tr>
@@ -508,9 +508,9 @@ export default function AdminPage() {
         {activeTab === "sessions" && (
           <div className="space-y-6">
             {/* Add Session Form */}
-            <div className="p-5 rounded-xl bg-[var(--surface-card)] border border-[var(--border-color)]">
-              <h3 className="text-sm font-semibold text-white mb-2">Add New Academic Session</h3>
-              <p className="text-xs text-[var(--text-secondary)] mb-4">
+            <div className="p-6 rounded-2xl bg-[var(--surface-card)] border border-[var(--border-color)]">
+              <h3 className="text-base font-bold text-white mb-1.5">Add New Academic Session</h3>
+              <p className="text-sm text-[var(--text-secondary)] mb-4 leading-relaxed">
                 Define institutional academic calendar sessions (e.g. 2030-31) to organize and partition document storage across Google Drive and PostgreSQL.
               </p>
 
@@ -523,53 +523,53 @@ export default function AdminPage() {
                   title="Session format must be YYYY-YY (e.g. 2030-31)"
                   value={newSessionName}
                   onChange={(e) => setNewSessionName(e.target.value)}
-                  className="flex-1 px-3.5 py-2 rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-xs text-white placeholder-[var(--text-muted)] focus:outline-none focus:border-emerald-500 font-mono"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border-color)] text-sm text-white placeholder-[var(--text-muted)] focus:outline-none focus:border-emerald-500 font-mono"
                 />
                 <button
                   type="submit"
                   disabled={isCreatingSession}
-                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-50 transition-all shadow-sm"
+                  className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-bold rounded-xl bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-50 transition-all shadow-sm hover:scale-[1.02] active:scale-[0.99]"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-4 h-4" />
                   <span>Add Session</span>
                 </button>
               </form>
             </div>
 
             {/* Sessions Table */}
-            <div className="rounded-xl border border-[var(--border-color)] bg-[var(--surface-card)] overflow-hidden">
-              <table className="w-full text-left border-collapse text-xs">
+            <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--surface-card)] overflow-hidden">
+              <table className="w-full text-left border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-[var(--border-color)] bg-[var(--surface-deep)] text-[11px] font-semibold uppercase text-[var(--text-muted)]">
-                    <th className="py-3 px-4">Session Name</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Default / Current</th>
-                    <th className="py-3 px-4 text-right">Action</th>
+                  <tr className="border-b border-[var(--border-color)] bg-[var(--surface-deep)] text-xs font-bold uppercase text-[var(--text-muted)]">
+                    <th className="py-3.5 px-4">Session Name</th>
+                    <th className="py-3.5 px-4">Status</th>
+                    <th className="py-3.5 px-4">Default / Current</th>
+                    <th className="py-3.5 px-4 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border-color)]">
                   {sessions.map((s) => (
-                    <tr key={s.id} className="hover:bg-[var(--surface-elevated)]/50">
-                      <td className="py-3.5 px-4 font-mono font-bold text-white">{s.name}</td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <tr key={s.id} className="hover:bg-[var(--surface-elevated)]/50 transition-colors">
+                      <td className="py-4 px-4 font-mono font-bold text-white text-base">{s.name}</td>
+                      <td className="py-4 px-4">
+                        <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                           {s.isActive ? "Active" : "Archived"}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-4 px-4">
                         {s.isCurrent ? (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500 text-slate-950">
+                          <span className="px-2.5 py-1 rounded text-xs font-bold bg-emerald-500 text-slate-950 shadow-sm">
                             ★ Primary Current
                           </span>
                         ) : (
-                          <span className="text-[11px] text-[var(--text-muted)]">Archived / Past</span>
+                          <span className="text-xs text-[var(--text-muted)] font-medium">Archived / Past</span>
                         )}
                       </td>
-                      <td className="py-3.5 px-4 text-right">
+                      <td className="py-4 px-4 text-right">
                         {!s.isCurrent && (
                           <button
                             onClick={() => handleSetCurrentSession(s.id)}
-                            className="px-3 py-1 rounded-lg text-xs font-semibold bg-[var(--surface-elevated)] border border-[var(--border-color)] text-white hover:border-emerald-500/40 transition-all"
+                            className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[var(--surface-elevated)] border border-[var(--border-color)] text-white hover:border-emerald-500/40 transition-all hover:bg-[var(--surface-card)]"
                           >
                             Set Default
                           </button>
@@ -586,10 +586,10 @@ export default function AdminPage() {
         {/* TAB 3: GOOGLE SHEETS SYNC QUEUE */}
         {activeTab === "sync" && (
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-[var(--surface-deep)] border border-[var(--border-color)]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 rounded-2xl bg-[var(--surface-deep)] border border-[var(--border-color)]">
               <div>
-                <h3 className="text-xs font-semibold text-white">Google Sheets Outbox Queue</h3>
-                <p className="text-[11px] text-[var(--text-secondary)]">
+                <h3 className="text-sm font-bold text-white">Google Sheets Outbox Queue</h3>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">
                   Durable PostgreSQL job table for institutional reporting synchronization.
                 </p>
               </div>
@@ -598,7 +598,7 @@ export default function AdminPage() {
                 <button
                   onClick={() => handleRetryFailedJobs()}
                   disabled={isRetryingSync}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-50 transition-all shadow-sm"
+                  className="flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:opacity-50 transition-all shadow-sm"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isRetryingSync ? "animate-spin" : ""}`} />
                   <span>Retry All Failed</span>
@@ -606,45 +606,45 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-[var(--border-color)] bg-[var(--surface-card)] overflow-hidden">
-              <table className="w-full text-left border-collapse text-xs">
+            <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--surface-card)] overflow-hidden">
+              <table className="w-full text-left border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-[var(--border-color)] bg-[var(--surface-deep)] text-[11px] font-semibold uppercase text-[var(--text-muted)]">
-                    <th className="py-3 px-4">Job ID / Record</th>
-                    <th className="py-3 px-4">Tab & Action</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Attempts</th>
-                    <th className="py-3 px-4">Error / Response</th>
-                    <th className="py-3 px-4 text-right">Retry</th>
+                  <tr className="border-b border-[var(--border-color)] bg-[var(--surface-deep)] text-xs font-bold uppercase text-[var(--text-muted)]">
+                    <th className="py-3.5 px-4">Job ID / Record</th>
+                    <th className="py-3.5 px-4">Tab & Action</th>
+                    <th className="py-3.5 px-4">Status</th>
+                    <th className="py-3.5 px-4">Attempts</th>
+                    <th className="py-3.5 px-4">Error / Response</th>
+                    <th className="py-3.5 px-4 text-right">Retry</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border-color)]">
                   {syncJobs.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-xs text-[var(--text-muted)]">
+                      <td colSpan={6} className="py-10 text-center text-sm text-[var(--text-muted)]">
                         No sync jobs in queue.
                       </td>
                     </tr>
                   ) : (
                     syncJobs.map((j) => (
-                      <tr key={j.id} className="hover:bg-[var(--surface-elevated)]/50">
-                        <td className="py-3 px-4">
-                          <span className="font-mono text-emerald-400 font-semibold">
+                      <tr key={j.id} className="hover:bg-[var(--surface-elevated)]/50 transition-colors">
+                        <td className="py-4 px-4">
+                          <span className="font-mono text-emerald-400 font-bold text-sm">
                             {j.record?.recordCode}
                           </span>
-                          <div className="text-[10px] text-[var(--text-muted)] font-mono">
+                          <div className="text-xs text-[var(--text-muted)] font-mono mt-0.5">
                             {j.id.slice(0, 12)}...
                           </div>
                         </td>
-                        <td className="py-3 px-4">
-                          <span className="font-medium text-white">{j.category}</span>
-                          <div className="text-[10px] text-[var(--text-secondary)] font-mono">
+                        <td className="py-4 px-4">
+                          <span className="font-bold text-white">{j.category}</span>
+                          <div className="text-xs text-[var(--text-secondary)] font-mono mt-0.5">
                             {j.action}
                           </div>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-4 px-4">
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${
+                            className={`px-2.5 py-0.5 rounded text-xs font-bold uppercase ${
                               j.status === "SUCCEEDED"
                                 ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                                 : j.status === "PROCESSING"
@@ -657,17 +657,17 @@ export default function AdminPage() {
                             {j.status}
                           </span>
                         </td>
-                        <td className="py-3 px-4 font-mono">{j.attempts} / {j.maxAttempts}</td>
-                        <td className="py-3 px-4 max-w-xs truncate text-[11px] text-[var(--text-secondary)]">
+                        <td className="py-4 px-4 font-mono font-medium">{j.attempts} / {j.maxAttempts}</td>
+                        <td className="py-4 px-4 max-w-xs truncate text-xs text-[var(--text-secondary)]">
                           {j.lastError || "Synchronized successfully"}
                         </td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-4 px-4 text-right">
                           <button
                             onClick={() => handleRetryFailedJobs(j.id)}
-                            className="p-1 text-[var(--text-secondary)] hover:text-white rounded hover:bg-[var(--surface-elevated)]"
+                            className="p-2 text-[var(--text-secondary)] hover:text-white rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
                             title="Retry sync job"
                           >
-                            <RefreshCw className="w-3.5 h-3.5" />
+                            <RefreshCw className="w-4 h-4" />
                           </button>
                         </td>
                       </tr>
@@ -682,40 +682,40 @@ export default function AdminPage() {
         {/* TAB 4: AUDIT TRAIL */}
         {activeTab === "audit" && (
           <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-[var(--surface-deep)] border border-[var(--border-color)]">
-              <h3 className="text-xs font-semibold text-white">Immutable Institutional Audit Log</h3>
-              <p className="text-[11px] text-[var(--text-secondary)]">
+            <div className="p-5 rounded-2xl bg-[var(--surface-deep)] border border-[var(--border-color)]">
+              <h3 className="text-sm font-bold text-white">Immutable Institutional Audit Log</h3>
+              <p className="text-xs text-[var(--text-secondary)] mt-0.5">
                 Cryptographically tracked system activity across faculty record creation, edits, approvals, and report sync.
               </p>
             </div>
 
-            <div className="rounded-xl border border-[var(--border-color)] bg-[var(--surface-card)] overflow-hidden">
-              <table className="w-full text-left border-collapse text-xs">
+            <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--surface-card)] overflow-hidden">
+              <table className="w-full text-left border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-[var(--border-color)] bg-[var(--surface-deep)] text-[11px] font-semibold uppercase text-[var(--text-muted)]">
-                    <th className="py-3 px-4">Timestamp</th>
-                    <th className="py-3 px-4">Action</th>
-                    <th className="py-3 px-4">Entity</th>
-                    <th className="py-3 px-4">User</th>
-                    <th className="py-3 px-4">Details</th>
+                  <tr className="border-b border-[var(--border-color)] bg-[var(--surface-deep)] text-xs font-bold uppercase text-[var(--text-muted)]">
+                    <th className="py-3.5 px-4">Timestamp</th>
+                    <th className="py-3.5 px-4">Action</th>
+                    <th className="py-3.5 px-4">Entity</th>
+                    <th className="py-3.5 px-4">User</th>
+                    <th className="py-3.5 px-4">Details</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border-color)]">
                   {auditLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-[var(--surface-elevated)]/50">
-                      <td className="py-3 px-4 text-[11px] text-[var(--text-muted)] whitespace-nowrap">
+                    <tr key={log.id} className="hover:bg-[var(--surface-elevated)]/50 transition-colors">
+                      <td className="py-4 px-4 text-xs text-[var(--text-muted)] whitespace-nowrap font-medium">
                         {format(new Date(log.createdAt), "MMM d, yyyy HH:mm:ss")}
                       </td>
-                      <td className="py-3 px-4 font-mono font-semibold text-emerald-400">
+                      <td className="py-4 px-4 font-mono font-bold text-emerald-400">
                         {log.action}
                       </td>
-                      <td className="py-3 px-4 font-mono text-[var(--text-secondary)]">
+                      <td className="py-4 px-4 font-mono text-xs text-[var(--text-secondary)]">
                         {log.entityType}
                       </td>
-                      <td className="py-3 px-4 text-white">
+                      <td className="py-4 px-4 text-white font-medium">
                         {log.user?.name || log.user?.email || "System"}
                       </td>
-                      <td className="py-3 px-4 max-w-sm truncate text-[11px] text-[var(--text-secondary)] font-mono">
+                      <td className="py-4 px-4 max-w-sm truncate text-xs text-[var(--text-secondary)] font-mono">
                         {log.details || "-"}
                       </td>
                     </tr>

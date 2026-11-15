@@ -94,30 +94,30 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center p-6 bg-[var(--surface-deep)] bg-tech-grid relative overflow-hidden">
       <div className="w-full max-w-xl space-y-6 relative z-10 animate-in fade-in zoom-in-95 duration-300">
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-950/60 border border-emerald-500/30 text-emerald-400">
-            <Shield className="w-6 h-6 text-emerald-400" />
+        <div className="text-center space-y-2.5">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-950/60 border border-emerald-500/30 text-emerald-400">
+            <Shield className="w-7 h-7 text-emerald-400" />
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl font-bold tracking-tight text-white">
             Complete Faculty Onboarding
           </h1>
-          <p className="text-xs text-[var(--text-secondary)]">
+          <p className="text-sm text-[var(--text-secondary)]">
             Setup your verified academic identity and institutional profile.
           </p>
         </div>
 
-        <div className="p-8 rounded-2xl bg-[var(--surface-card)]/90 backdrop-blur-xl border border-[var(--border-color)] shadow-2xl">
+        <div className="p-8 sm:p-9 rounded-2xl bg-[var(--surface-card)]/90 backdrop-blur-xl border border-[var(--border-color)] shadow-2xl">
           {errorMsg && (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs mb-6">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm mb-6">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+                <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">
                   Full Name <span className="text-emerald-400">*</span>
                 </label>
                 <input
@@ -126,26 +126,26 @@ export default function OnboardingPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Dr. Rajesh Sharma"
-                  className="w-full px-3.5 py-2 rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-xs text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border-color)] text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+                <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">
                   Faculty Email (Verified Google Account)
                 </label>
                 <input
                   type="email"
                   disabled
                   value={email}
-                  className="w-full px-3.5 py-2 rounded-lg bg-[var(--surface-deep)] border border-[var(--border-color)] text-xs text-white/60 cursor-not-allowed"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--surface-deep)] border border-[var(--border-color)] text-sm text-white/60 cursor-not-allowed"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+                <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">
                   Faculty ID / Employee Code <span className="text-emerald-400">*</span>
                 </label>
                 <input
@@ -154,19 +154,19 @@ export default function OnboardingPage() {
                   value={facultyId}
                   onChange={(e) => setFacultyId(e.target.value)}
                   placeholder="e.g. F001 or CS-2024"
-                  className="w-full px-3.5 py-2 rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border-color)] text-sm text-white font-mono focus:outline-none focus:border-emerald-500 transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+                <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">
                   Engineering Institute <span className="text-emerald-400">*</span>
                 </label>
                 <select
                   required
                   value={instituteId}
                   onChange={(e) => setInstituteId(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border-color)] text-sm text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
                 >
                   {institutes.map((inst) => (
                     <option key={inst.id} value={inst.id}>
@@ -179,7 +179,7 @@ export default function OnboardingPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+                <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">
                   Department <span className="text-emerald-400">*</span>
                 </label>
                 <input
@@ -188,12 +188,12 @@ export default function OnboardingPage() {
                   value={department}
                   onChange={(e) => setDepartment(e.target.value)}
                   placeholder="e.g. Computer Science & Engineering"
-                  className="w-full px-3.5 py-2 rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-xs text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border-color)] text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+                <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">
                   Designation <span className="text-emerald-400">*</span>
                 </label>
                 <input
@@ -202,13 +202,13 @@ export default function OnboardingPage() {
                   value={designation}
                   onChange={(e) => setDesignation(e.target.value)}
                   placeholder="e.g. Associate Professor"
-                  className="w-full px-3.5 py-2 rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-xs text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border-color)] text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+              <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-1.5">
                 Phone Number (Optional)
               </label>
               <input
@@ -216,7 +216,7 @@ export default function OnboardingPage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="e.g. +91 98765 43210"
-                className="w-full px-3.5 py-2 rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-xs text-white focus:outline-none focus:border-emerald-500"
+                className="w-full px-4 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border-color)] text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
               />
             </div>
 
@@ -224,10 +224,10 @@ export default function OnboardingPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-500 text-slate-950 font-semibold text-xs hover:bg-emerald-400 transition-all shadow-md shadow-emerald-500/10 disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-sm sm:text-base hover:bg-emerald-400 transition-all shadow-md shadow-emerald-500/15 disabled:opacity-50 hover:scale-[1.01] active:scale-[0.99]"
               >
                 {isSubmitting ? (
-                  <span className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                  <span className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
                     <span>Complete Onboarding</span>
