@@ -102,14 +102,14 @@ export function Sidebar({
         <div className="flex flex-col">
           <div
             className={`flex items-center h-16 border-b border-transparent transition-all ${
-              isCollapsed ? "justify-center px-0" : "justify-between px-4"
+              isCollapsed ? "justify-center px-0" : "justify-between px-3"
             }`}
           >
             {/* Expanded mode: show Logo & Brand text */}
             {!isCollapsed && (
               <Link
                 href="/"
-                className="flex items-center gap-3 overflow-hidden group focus:outline-none"
+                className="flex items-center gap-3 overflow-hidden group focus:outline-none min-w-0"
                 onClick={() => setMobileOpen?.(false)}
               >
                 {/* Vault Logo Mark */}
@@ -120,7 +120,7 @@ export function Sidebar({
 
                 {/* Brand Name & Tagline */}
                 <div className="flex flex-col min-w-0">
-                  <span className="text-base font-bold tracking-tight text-white">Faculty Vault</span>
+                  <span className="text-base font-bold tracking-tight text-white whitespace-nowrap">Faculty Vault</span>
                   <span className="text-xs text-[var(--text-secondary)] font-medium truncate">
                     Academic Records ERP
                   </span>
@@ -128,14 +128,14 @@ export function Sidebar({
               </Link>
             )}
 
-            {/* Collapse/Expand Toggle Button: when collapsed, ONLY this button is visible at the top */}
+            {/* Collapse/Expand Toggle Button: right-aligned flush above Dashboard button edge */}
             <button
               onClick={toggleCollapse}
               aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-              className={`flex items-center justify-center rounded-xl text-[var(--text-secondary)] hover:text-white hover:bg-[var(--surface-elevated)] border border-transparent hover:border-[var(--border-color)] transition-all ${
+              className={`flex items-center justify-center transition-all ${
                 isCollapsed
-                  ? "w-10 h-10 bg-[var(--surface-elevated)]/70 text-emerald-400 border-[var(--border-color)] shadow-sm"
-                  : "hidden md:flex w-10 h-10 text-[var(--text-secondary)] hover:text-white"
+                  ? "w-10 h-10 bg-[var(--surface-elevated)]/70 text-emerald-400 border border-[var(--border-color)] rounded-xl shadow-sm hover:border-emerald-500/40 hover:text-white"
+                  : "hidden md:flex items-center justify-center w-8 h-8 rounded-lg text-[var(--text-secondary)] hover:text-white hover:bg-[var(--surface-elevated)] transition-all ml-auto flex-shrink-0"
               }`}
               title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
