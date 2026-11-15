@@ -49,7 +49,7 @@ export function Header({ onOpenMobileSidebar, onOpenAddRecord }: HeaderProps) {
   ].includes(pathname);
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between h-18 px-4 md:px-8 border-b bg-[var(--surface-main)]/85 backdrop-blur-md border-[var(--border-color)]">
+    <header className="sticky top-0 z-30 flex items-center justify-between h-18 px-4 md:px-8 border-b border-transparent bg-[var(--surface-main)]/85 backdrop-blur-md">
       {/* Left: Mobile hamburger + Page Title */}
       <div className="flex items-center gap-3">
         <button

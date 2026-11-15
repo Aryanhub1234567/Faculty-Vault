@@ -22,7 +22,6 @@ import {
   LogOut,
   User,
   ChevronRight,
-  Sparkles,
 } from "lucide-react";
 import { useTheme } from "@/components/theme/theme-provider";
 
@@ -102,7 +101,7 @@ export function Sidebar({
         {/* TOP SECTION: Branding & Collapse Toggle */}
         <div className="flex flex-col">
           <div
-            className={`flex items-center h-16 border-b border-[var(--border-color)] transition-all ${
+            className={`flex items-center h-16 border-b border-transparent transition-all ${
               isCollapsed ? "justify-center px-0" : "justify-between px-4"
             }`}
           >
@@ -121,12 +120,7 @@ export function Sidebar({
 
                 {/* Brand Name & Tagline */}
                 <div className="flex flex-col min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-base font-bold tracking-tight text-white">Faculty Vault</span>
-                    <span className="px-1.5 py-0.5 text-[10px] font-bold tracking-wide uppercase rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      v2.0
-                    </span>
-                  </div>
+                  <span className="text-base font-bold tracking-tight text-white">Faculty Vault</span>
                   <span className="text-xs text-[var(--text-secondary)] font-medium truncate">
                     Academic Records ERP
                   </span>
@@ -141,27 +135,17 @@ export function Sidebar({
               className={`flex items-center justify-center rounded-xl text-[var(--text-secondary)] hover:text-white hover:bg-[var(--surface-elevated)] border border-transparent hover:border-[var(--border-color)] transition-all ${
                 isCollapsed
                   ? "w-10 h-10 bg-[var(--surface-elevated)]/70 text-emerald-400 border-[var(--border-color)] shadow-sm"
-                  : "hidden md:flex w-8 h-8"
+                  : "hidden md:flex w-10 h-10 text-[var(--text-secondary)] hover:text-white"
               }`}
               title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {isCollapsed ? (
-                <PanelLeftOpen className="w-5 h-5 text-emerald-400" />
+                <PanelLeftOpen className="w-6 h-6 text-emerald-400" />
               ) : (
-                <PanelLeftClose className="w-4 h-4" />
+                <PanelLeftClose className="w-6 h-6" />
               )}
             </button>
           </div>
-
-          {/* Tagline Banner (Expanded only) - Raleway font for Brand Tagline */}
-          {!isCollapsed && (
-            <div className="px-4 py-2 bg-[var(--surface-main)]/70 border-b border-[var(--border-color)] flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-              <span className="truncate font-raleway text-xs font-semibold tracking-wide text-white/90">
-                Your Academic Journey. One Secure Vault.
-              </span>
-            </div>
-          )}
 
           {/* PRIMARY NAVIGATION */}
           <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto no-scrollbar sidebar-no-scrollbar max-h-[calc(100vh-250px)]">
