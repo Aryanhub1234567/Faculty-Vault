@@ -12,11 +12,33 @@ import {
   Layers,
   ArrowRight,
   UserCheck,
+  AlertCircle,
 } from "lucide-react";
 
 export default function LoginPage() {
   const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
   const [selectedQuickRole, setSelectedQuickRole] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const err = params.get("error");
+      if (err) {
+        if (err === "CredentialsSignin") {
+          setAuthError("Invalid credentials or account could not be found.");
+        } else if (err === "DatabaseError") {
+          setAuthError("Database connection unavailable. Please check the database configuration.");
+        } else if (err === "OAuthSignin" || err === "OAuthCallback" || err === "Callback") {
+          setAuthError("Google Workspace sign-in encountered an issue. Please try again.");
+        } else if (err === "AccessDenied") {
+          setAuthError("Access denied. Please contact an institute administrator.");
+        } else {
+          setAuthError("Authentication error occurred. Please try again.");
+        }
+      }
+    }
+  }, []);
 
   const handleGoogleSignIn = () => {
     setIsLoadingGoogle(true);
@@ -62,6 +84,14 @@ export default function LoginPage() {
               Use your institutional Google account for identity verification.
             </p>
           </div>
+
+          {/* Safe Authentication Error Banner */}
+          {authError && (
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs sm:text-sm flex items-start gap-2.5 animate-in fade-in">
+              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-rose-400" />
+              <span>{authError}</span>
+            </div>
+          )}
 
           {/* Primary Action: Google OAuth */}
           <button

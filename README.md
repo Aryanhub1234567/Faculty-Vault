@@ -261,22 +261,76 @@ Result: All 30 routes compiled with 0 errors.
 
 ## 9. Quick Start (Local Development)
 
+Faculty Vault includes zero-config SQLite support for local development and offline testing without needing a local PostgreSQL instance.
+
 ```bash
 # 1. Clone repository
 git clone <repo-url> "Faculty Vault"
 cd "Faculty Vault"
 
-# 2. Install dependencies
+# 2. Install dependencies (automatically generates SQLite Prisma Client)
 npm install
 
 # 3. Configure environment
 cp .env.example .env
+# .env defaults to: DATABASE_URL="file:./dev.db"
 
-# 4. Initialize local SQLite database
-npx prisma db push --schema=prisma/schema.sqlite.prisma
-node scripts/seed.mjs
+# 4. Initialize local SQLite database & seed demo accounts
+npm run db:init:local
+# Or individually:
+# npm run prisma:push:sqlite
+# npm run seed
 
 # 5. Start dev server
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) and sign in as `admin@facultyvault.edu` to connect Google Drive storage!
+Open [http://localhost:3000](http://localhost:3000) and sign in using one of the pre-seeded instant accounts (`admin@facultyvault.edu` or `dr.sharma@facultyvault.edu`) or connect via Google Workspace!
+
+---
+
+## 10. Production Deployment (PostgreSQL)
+
+In production environments (Vercel, Railway, Docker, AWS, etc.), Faculty Vault runs on PostgreSQL using the enterprise schema (`prisma/schema.prisma`) with native enums and relational integrity.
+
+### Environment Configuration
+Set the following environment variables in your deployment dashboard or `.env.production`:
+```env
+DATABASE_URL="postgresql://user:password@db.example.com:5432/faculty_vault?schema=public"
+NEXTAUTH_URL="https://your-domain.com"
+NEXTAUTH_SECRET="your-32-character-secret"
+GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="your-client-secret"
+GOOGLE_REDIRECT_URI="https://your-domain.com/api/auth/google/callback"
+ADMIN_EMAILS="admin@institute.edu"
+```
+
+### Database Initialization & Migration (Production)
+```bash
+# Push production schema to PostgreSQL
+npm run prisma:push:postgres
+
+# Or apply migrations in production CI/CD:
+npm run prisma:migrate:prod
+
+# Optional: Seed default academic sessions and initial administrator
+npm run seed
+```
+
+### Prisma Scripts Reference
+
+Faculty Vault provides a smart CLI runner (`scripts/prisma-cli.mjs`) that automatically inspects `DATABASE_URL` and selects the matching schema, while also offering explicit commands:
+
+| Command | Target Datasource | Purpose |
+|---|---|---|
+| `npm run prisma:generate` | Auto-detected | Generates `@prisma/client` from SQLite or PostgreSQL schema based on `DATABASE_URL` |
+| `npm run prisma:generate:sqlite` | SQLite (`schema.sqlite.prisma`) | Explicitly generates Prisma client for SQLite |
+| `npm run prisma:generate:postgres` | PostgreSQL (`schema.prisma`) | Explicitly generates Prisma client for PostgreSQL |
+| `npm run prisma:push` | Auto-detected | Pushes schema structure to active database |
+| `npm run prisma:push:sqlite` | SQLite (`schema.sqlite.prisma`) | Pushes SQLite schema to `prisma/dev.db` |
+| `npm run prisma:push:postgres` | PostgreSQL (`schema.prisma`) | Pushes PostgreSQL schema to production database |
+| `npm run prisma:migrate:prod` | PostgreSQL (`schema.prisma`) | Runs `prisma migrate deploy` for production releases |
+| `npm run prisma:studio` | Auto-detected | Opens Prisma Studio GUI for current database |
+| `npm run db:init:local` | SQLite (`schema.sqlite.prisma`) | One-step SQLite initialization and demo database seeding |
+| `npm run db:init:prod` | PostgreSQL (`schema.prisma`) | One-step PostgreSQL initialization and seeding |
+| `npm run build` | Auto-detected | Runs Prisma Client generation before Next.js production build |
+

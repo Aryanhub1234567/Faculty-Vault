@@ -14,11 +14,11 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     // 1. Google OAuth Provider for Production
-    ...(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET && process.env.AUTH_GOOGLE_ID !== "mock-google-client-id"
+    ...(process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID
       ? [
           GoogleProvider({
-            clientId: process.env.AUTH_GOOGLE_ID,
-            clientSecret: process.env.AUTH_GOOGLE_SECRET,
+            clientId: (process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID)!,
+            clientSecret: (process.env.AUTH_GOOGLE_SECRET || process.env.GOOGLE_CLIENT_SECRET)!,
           }),
         ]
       : []),
@@ -38,74 +38,88 @@ export const authOptions: NextAuthOptions = {
 
         const email = credentials.email.trim().toLowerCase();
 
-        // Check if user already exists
-        let user = await prisma.user.findUnique({
-          where: { email },
-          include: { facultyProfile: true },
-        });
-
-        // Determine admin status
-        const adminEmails = (process.env.ADMIN_EMAILS || "")
-          .split(",")
-          .map((e) => e.trim().toLowerCase())
-          .filter(Boolean);
-        const isAdmin = adminEmails.includes(email) || credentials.role === "ADMIN";
-
-        if (!user) {
-          user = await prisma.user.create({
-            data: {
-              email,
-              name: email.split("@")[0].replace(".", " "),
-              role: isAdmin ? "ADMIN" : "FACULTY",
-              accountStatus: isAdmin ? "APPROVED" : "PENDING",
-            },
+        try {
+          // Check if user already exists
+          let user = await prisma.user.findUnique({
+            where: { email },
             include: { facultyProfile: true },
           });
-        }
 
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          image: user.image,
-          role: user.role,
-          accountStatus: user.accountStatus,
-          hasProfile: !!user.facultyProfile,
-        };
+          // Determine admin status
+          const adminEmails = (process.env.ADMIN_EMAILS || "")
+            .split(",")
+            .map((e) => e.trim().toLowerCase())
+            .filter(Boolean);
+          const isAdmin = adminEmails.includes(email) || credentials.role === "ADMIN";
+
+          if (!user) {
+            user = await prisma.user.create({
+              data: {
+                email,
+                name: email.split("@")[0].replace(".", " "),
+                role: isAdmin ? "ADMIN" : "FACULTY",
+                accountStatus: isAdmin ? "APPROVED" : "PENDING",
+              },
+              include: { facultyProfile: true },
+            });
+          }
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+            role: user.role,
+            accountStatus: user.accountStatus,
+            hasProfile: !!user.facultyProfile,
+          };
+        } catch (error) {
+          console.error("[NextAuth] Database error in authorize:", error);
+          // Return null to signal failed credentials sign-in cleanly without leaking
+          // raw multiline error strings into the redirect URL which causes "Headers.set: invalid header value"
+          return null;
+        }
       },
     }),
   ],
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === "google" && user.email) {
-        const email = user.email.toLowerCase();
-        const adminEmails = (process.env.ADMIN_EMAILS || "")
-          .split(",")
-          .map((e) => e.trim().toLowerCase());
-        const isAdmin = adminEmails.includes(email);
+        try {
+          const email = user.email.toLowerCase();
+          const adminEmails = (process.env.ADMIN_EMAILS || "")
+            .split(",")
+            .map((e) => e.trim().toLowerCase());
+          const isAdmin = adminEmails.includes(email);
 
-        // Upsert user in database
-        const dbUser = await prisma.user.upsert({
-          where: { email },
-          update: {
-            name: user.name ?? undefined,
-            image: user.image ?? undefined,
-            ...(isAdmin ? { role: "ADMIN", accountStatus: "APPROVED" } : {}),
-          },
-          create: {
-            email,
-            name: user.name ?? email.split("@")[0],
-            image: user.image ?? undefined,
-            role: isAdmin ? "ADMIN" : "FACULTY",
-            accountStatus: isAdmin ? "APPROVED" : "PENDING",
-          },
-        });
+          // Upsert user in database
+          const dbUser = await prisma.user.upsert({
+            where: { email },
+            update: {
+              name: user.name ?? undefined,
+              image: user.image ?? undefined,
+              ...(isAdmin ? { role: "ADMIN", accountStatus: "APPROVED" } : {}),
+            },
+            create: {
+              email,
+              name: user.name ?? email.split("@")[0],
+              image: user.image ?? undefined,
+              role: isAdmin ? "ADMIN" : "FACULTY",
+              accountStatus: isAdmin ? "APPROVED" : "PENDING",
+            },
+          });
 
-        user.id = dbUser.id;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (user as any).role = dbUser.role;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (user as any).accountStatus = dbUser.accountStatus;
+          user.id = dbUser.id;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (user as any).role = dbUser.role;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (user as any).accountStatus = dbUser.accountStatus;
+        } catch (error) {
+          console.error("[NextAuth] Database error in Google signIn callback:", error);
+          // Return clean redirect to error page without embedding raw database/Prisma error text
+          // to prevent "Headers.set: invalid header value" HTTP errors
+          return "/login?error=DatabaseError";
+        }
       }
       return true;
     },
@@ -126,20 +140,35 @@ export const authOptions: NextAuthOptions = {
 
       // Check current user details from database on token verification
       if (token.id) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          include: { facultyProfile: true },
-        });
-        if (dbUser) {
-          token.role = dbUser.role;
-          token.accountStatus = dbUser.accountStatus;
-          token.hasProfile = !!dbUser.facultyProfile;
-          token.facultyProfileId = dbUser.facultyProfile?.id;
-          token.facultyId = dbUser.facultyProfile?.facultyId;
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            include: { facultyProfile: true },
+          });
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.accountStatus = dbUser.accountStatus;
+            token.hasProfile = !!dbUser.facultyProfile;
+            token.facultyProfileId = dbUser.facultyProfile?.id;
+            token.facultyId = dbUser.facultyProfile?.facultyId;
+          }
+        } catch (error) {
+          console.error("[NextAuth] Database error in jwt callback:", error);
         }
       }
 
       return token;
+    },
+    async redirect({ url, baseUrl }) {
+      // Prevent header injection / invalid header value errors by stripping any newline or carriage return characters
+      const sanitizedUrl = url.replace(/[\r\n]/g, "");
+      if (sanitizedUrl.startsWith("/")) return `${baseUrl}${sanitizedUrl}`;
+      try {
+        if (new URL(sanitizedUrl).origin === baseUrl) return sanitizedUrl;
+      } catch {
+        return baseUrl;
+      }
+      return baseUrl;
     },
     async session({ session, token }) {
       if (session.user) {
