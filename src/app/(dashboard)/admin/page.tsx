@@ -19,6 +19,9 @@ import {
   FileText,
   Calendar,
   Lock,
+  HardDrive,
+  FolderCheck,
+  Check,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -28,8 +31,14 @@ export default function AdminPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const user = session?.user as any;
 
-  // Active tab: 'faculty' | 'sessions' | 'sync' | 'audit'
-  const [activeTab, setActiveTab] = useState<"faculty" | "sessions" | "sync" | "audit">("faculty");
+  // Active tab: 'faculty' | 'sessions' | 'sync' | 'audit' | 'drive'
+  const [activeTab, setActiveTab] = useState<"faculty" | "sessions" | "sync" | "audit" | "drive">("faculty");
+
+  // Google Drive OAuth state
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [driveStatus, setDriveStatus] = useState<any>(null);
+  const [isLoadingDrive, setIsLoadingDrive] = useState(false);
+  const [isDisconnectingDrive, setIsDisconnectingDrive] = useState(false);
 
   // Stats state
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -136,12 +145,76 @@ export default function AdminPage() {
     }
   };
 
+  // 6. Fetch Google Drive Status
+  const fetchDriveStatus = async () => {
+    try {
+      setIsLoadingDrive(true);
+      const res = await fetch("/api/auth/google/status");
+      if (res.ok) {
+        const data = await res.json();
+        setDriveStatus(data);
+      }
+    } catch (err) {
+      console.error("Failed to load Google Drive status:", err);
+    } finally {
+      setIsLoadingDrive(false);
+    }
+  };
+
+  // 7. Disconnect Google Drive
+  const handleDisconnectDrive = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to disconnect Google Drive? Faculty document uploads to Google Drive will be paused until re-authorized."
+      )
+    ) {
+      return;
+    }
+    try {
+      setIsDisconnectingDrive(true);
+      const res = await fetch("/api/auth/google/disconnect", { method: "POST" });
+      if (res.ok) {
+        toast.success("Google Drive disconnected successfully.");
+        await fetchDriveStatus();
+      } else {
+        const err = await res.json();
+        toast.error(err.error || "Failed to disconnect Google Drive");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to disconnect Google Drive");
+    } finally {
+      setIsDisconnectingDrive(false);
+    }
+  };
+
   useEffect(() => {
     fetchStats();
     fetchFaculty();
     fetchSessions();
     fetchSyncJobs();
     fetchAuditLogs();
+    fetchDriveStatus();
+
+    // Check URL parameters for OAuth redirect notifications
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      const statusParam = params.get("status");
+      const emailParam = params.get("email");
+      const errorParam = params.get("error");
+
+      if (tabParam === "drive") {
+        setActiveTab("drive");
+      }
+
+      if (statusParam === "connected") {
+        toast.success(
+          `Google Drive successfully connected to ${emailParam || "iiimt.facultyvault@gmail.com"}!`
+        );
+      } else if (errorParam) {
+        toast.error(`Google Drive OAuth error: ${errorParam}`);
+      }
+    }
   }, []);
 
   // Faculty Approval action
@@ -387,6 +460,24 @@ export default function AdminPage() {
           >
             <History className="w-4 h-4" />
             <span>Audit Trail</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab("drive");
+              fetchDriveStatus();
+            }}
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition-all ${
+              activeTab === "drive"
+                ? "border-emerald-500 text-emerald-400"
+                : "border-transparent text-[var(--text-secondary)] hover:text-white"
+            }`}
+          >
+            <HardDrive className="w-4 h-4" />
+            <span>Google Drive Storage</span>
+            {driveStatus?.connected && (
+              <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            )}
           </button>
         </div>
 
@@ -722,6 +813,206 @@ export default function AdminPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: GOOGLE DRIVE STORAGE (OAUTH 2.0) */}
+        {activeTab === "drive" && (
+          <div className="space-y-6">
+            {/* Top Status Card */}
+            <div className="p-6 rounded-2xl bg-[var(--surface-deep)] border border-[var(--border-color)]">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div
+                    className={`p-3.5 rounded-2xl border ${
+                      driveStatus?.connected
+                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                        : driveStatus?.configured
+                        ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                        : "bg-sky-500/10 border-sky-500/30 text-sky-400"
+                    }`}
+                  >
+                    <HardDrive className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2.5">
+                      <h3 className="text-lg font-bold text-white">Google Drive Central Storage</h3>
+                      <span
+                        className={`text-xs px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                          driveStatus?.connected
+                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                            : driveStatus?.configured
+                            ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                            : "bg-sky-500/20 text-sky-400 border border-sky-500/30"
+                        }`}
+                      >
+                        {driveStatus?.connected
+                          ? "Connected & Active"
+                          : driveStatus?.configured
+                          ? "Authorization Required"
+                          : "Mock Mode Active"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[var(--text-secondary)] mt-1 max-w-2xl leading-relaxed">
+                      Faculty Vault uses a central Google account (
+                      <code className="text-emerald-400 font-mono">iiimt.facultyvault@gmail.com</code>)
+                      to store, organize, and retrieve all institutional documents in regular Google Drive
+                      (<strong className="text-white">My Drive / Faculty Vault</strong>) via OAuth 2.0 Web Server Flow.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={fetchDriveStatus}
+                    disabled={isLoadingDrive}
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg bg-[var(--surface-card)] hover:bg-[var(--surface-elevated)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-white transition-all disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isLoadingDrive ? "animate-spin" : ""}`} />
+                    <span>Refresh</span>
+                  </button>
+
+                  {driveStatus?.connected ? (
+                    <button
+                      onClick={handleDisconnectDrive}
+                      disabled={isDisconnectingDrive}
+                      className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 transition-all disabled:opacity-50"
+                    >
+                      <span>{isDisconnectingDrive ? "Disconnecting..." : "Disconnect Drive"}</span>
+                    </button>
+                  ) : (
+                    <a
+                      href="/api/auth/google"
+                      className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-950 transition-all"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Connect iiimt.facultyvault@gmail.com</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Connection Details Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-4 rounded-xl bg-[var(--surface-card)] border border-[var(--border-color)]">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                  Central Storage Account
+                </span>
+                <p className="text-sm font-semibold text-white mt-1 font-mono truncate">
+                  {driveStatus?.accountEmail || "iiimt.facultyvault@gmail.com"}
+                </p>
+                <span className="text-[11px] text-[var(--text-secondary)] mt-1 block">
+                  Free Gmail (No Workspace domain)
+                </span>
+              </div>
+
+              <div className="p-4 rounded-xl bg-[var(--surface-card)] border border-[var(--border-color)]">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                  Drive Root Folder
+                </span>
+                <p className="text-sm font-semibold text-white mt-1">
+                  My Drive / <span className="text-emerald-400">Faculty Vault</span>
+                </p>
+                <span className="text-[11px] text-[var(--text-secondary)] mt-1 font-mono truncate block">
+                  {driveStatus?.rootFolderId ? `ID: ${driveStatus.rootFolderId.slice(0, 16)}...` : "Auto-created on first sync"}
+                </span>
+              </div>
+
+              <div className="p-4 rounded-xl bg-[var(--surface-card)] border border-[var(--border-color)]">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                  OAuth 2.0 Scope
+                </span>
+                <p className="text-sm font-semibold text-white mt-1">
+                  drive.file
+                </p>
+                <span className="text-[11px] text-emerald-400/90 mt-1 block">
+                  Least-Privilege (Vault files only)
+                </span>
+              </div>
+
+              <div className="p-4 rounded-xl bg-[var(--surface-card)] border border-[var(--border-color)]">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                  Token Refresh Lifecycle
+                </span>
+                <p className="text-sm font-semibold text-white mt-1">
+                  Offline Auto-Refresh
+                </p>
+                <span className="text-[11px] text-[var(--text-secondary)] mt-1 block">
+                  Persisted across server restarts
+                </span>
+              </div>
+            </div>
+
+            {/* Architecture Explanations */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-5 rounded-2xl bg-[var(--surface-deep)] border border-[var(--border-color)] space-y-3">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                  <h4 className="text-sm font-bold text-white">Central Account vs. Professor Isolation</h4>
+                </div>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                  Professors <strong className="text-white">never</strong> need credentials to{" "}
+                  <code className="text-emerald-400 font-mono">iiimt.facultyvault@gmail.com</code>. Faculty Vault’s backend acts
+                  as the secure gateway, enforcing role-based and department-based access controls before any file is uploaded
+                  or previewed.
+                </p>
+                <ul className="text-xs text-[var(--text-secondary)] space-y-1.5 list-disc list-inside">
+                  <li>Central OAuth tokens are stored exclusively on the server and never sent to the browser.</li>
+                  <li>Professors only view documents permitted by their institutional role and faculty profile.</li>
+                  <li>Drive storage remains private and is never made publicly accessible on the web.</li>
+                </ul>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-[var(--surface-deep)] border border-[var(--border-color)] space-y-3">
+                <div className="flex items-center gap-2">
+                  <FolderCheck className="w-5 h-5 text-emerald-400" />
+                  <h4 className="text-sm font-bold text-white">Automated My Drive Hierarchy</h4>
+                </div>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                  Every document is automatically filed into a standardized folder hierarchy in My Drive to prevent clutter
+                  and guarantee structural integrity:
+                </p>
+                <div className="p-3 rounded-lg bg-[var(--surface-card)] border border-[var(--border-color)] font-mono text-[11px] text-emerald-400 space-y-1">
+                  <div>📁 Faculty Vault /</div>
+                  <div className="pl-4">📁 Institute Name /</div>
+                  <div className="pl-8">📁 FacultyID_FacultyName /</div>
+                  <div className="pl-12">📁 AcademicSession (e.g. 2026-27) /</div>
+                  <div className="pl-16">📁 Category / RecordCode_Title</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Diagnostics & Setup Helper */}
+            <div className="p-5 rounded-2xl bg-[var(--surface-deep)] border border-[var(--border-color)] space-y-3">
+              <h4 className="text-sm font-bold text-white">Google Cloud Console Integration Checklist</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-[var(--surface-card)] border border-[var(--border-color)]">
+                  <strong className="text-white block mb-1">1. Authorized Redirect URI</strong>
+                  <code className="text-[11px] text-emerald-400 font-mono break-all">
+                    http://localhost:3000/api/auth/google/callback
+                  </code>
+                </div>
+                <div className="p-3 rounded-xl bg-[var(--surface-card)] border border-[var(--border-color)]">
+                  <strong className="text-white block mb-1">2. OAuth Consent Screen</strong>
+                  <span className="text-[var(--text-secondary)] block">
+                    Scope: <code className="text-emerald-400 font-mono">drive.file</code>
+                  </span>
+                  <span className="text-[var(--text-secondary)] block mt-0.5">
+                    User: <code className="text-emerald-400 font-mono">iiimt.facultyvault@gmail.com</code>
+                  </span>
+                </div>
+                <div className="p-3 rounded-xl bg-[var(--surface-card)] border border-[var(--border-color)]">
+                  <strong className="text-white block mb-1">3. Token Persistence</strong>
+                  <span className="text-[var(--text-secondary)] block">
+                    Persisted in: <code className="text-emerald-400 font-mono">.google-tokens.json</code>
+                  </span>
+                  <span className="text-[var(--text-secondary)] block mt-0.5">
+                    Or via env: <code className="text-emerald-400 font-mono">GOOGLE_REFRESH_TOKEN</code>
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         )}

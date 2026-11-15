@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/prisma";
-import { isGoogleDriveConfigured } from "@/lib/google/drive";
-import { google } from "googleapis";
+import { isGoogleDriveConfigured, getDriveFileStream } from "@/lib/google/drive";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -40,22 +39,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     // If production Google Drive configured and file has driveFileId, stream from Drive
     if (isGoogleDriveConfigured() && attachment.driveFileId && !attachment.driveFileId.startsWith("mock_")) {
-      const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-      const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, "\n");
+      const driveStream = await getDriveFileStream(attachment.driveFileId);
 
-      const auth = new google.auth.JWT({
-        email,
-        key: privateKey,
-        scopes: ["https://www.googleapis.com/auth/drive.readonly"],
-      });
-
-      const drive = google.drive({ version: "v3", auth });
-      const driveRes = await drive.files.get(
-        { fileId: attachment.driveFileId, alt: "media" },
-        { responseType: "stream" }
-      );
-
-      return new Response(driveRes.data as any, {
+      return new Response(driveStream as any, {
         headers: {
           "Content-Type": attachment.mimeType,
           "Content-Disposition": `inline; filename="${attachment.fileName}"`,

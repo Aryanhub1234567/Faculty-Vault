@@ -1,6 +1,7 @@
 import { google } from "googleapis";
 import { prisma } from "@/lib/db/prisma";
 import { format } from "date-fns";
+import { getOAuth2Client, loadStoredTokens } from "@/lib/google/oauth";
 
 export const SHEET_TAB_NAMES = {
   CONFERENCE: "Conference",
@@ -92,11 +93,21 @@ export const TAB_HEADERS = {
 };
 
 export function isGoogleSheetsConfigured(): boolean {
-  return Boolean(
-    process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
-      process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY &&
-      process.env.GOOGLE_SHEETS_SPREADSHEET_ID
+  const hasSpreadsheetId = Boolean(process.env.GOOGLE_SHEETS_SPREADSHEET_ID);
+  if (!hasSpreadsheetId) return false;
+
+  const tokens = loadStoredTokens();
+  const hasOAuth = Boolean(
+    (process.env.GOOGLE_CLIENT_ID || process.env.AUTH_GOOGLE_ID) &&
+      (tokens?.refresh_token || process.env.GOOGLE_REFRESH_TOKEN)
   );
+
+  const hasServiceAccount = Boolean(
+    process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
+      process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
+  );
+
+  return hasOAuth || hasServiceAccount;
 }
 
 function getSheetsClient() {
@@ -104,16 +115,25 @@ function getSheetsClient() {
     return null;
   }
 
+  const oauth2 = getOAuth2Client();
+  const tokens = loadStoredTokens();
+  if (oauth2 && (tokens?.refresh_token || process.env.GOOGLE_REFRESH_TOKEN)) {
+    return google.sheets({ version: "v4", auth: oauth2 });
+  }
+
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
   const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, "\n");
 
-  const auth = new google.auth.JWT({
-    email,
-    key: privateKey,
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  });
+  if (email && privateKey) {
+    const auth = new google.auth.JWT({
+      email,
+      key: privateKey,
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+    });
+    return google.sheets({ version: "v4", auth });
+  }
 
-  return google.sheets({ version: "v4", auth });
+  return null;
 }
 
 export async function queueSheetSyncJob(

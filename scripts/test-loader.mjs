@@ -1,4 +1,4 @@
-import { pathToFileURL } from "node:url";
+import { pathToFileURL, fileURLToPath } from "node:url";
 import path from "node:path";
 import fs from "node:fs";
 
@@ -24,7 +24,7 @@ export async function resolve(specifier, context, nextResolve) {
 
   // Resolve relative imports without extension (e.g. ./prisma -> ./prisma.ts)
   if (target.startsWith(".") && context.parentURL) {
-    const parentDir = path.dirname(new URL(context.parentURL).pathname.replace(/^\/([A-Z]:)/, "$1"));
+    const parentDir = path.dirname(fileURLToPath(context.parentURL));
     const candidateTs = path.join(parentDir, `${target}.ts`);
     if (fs.existsSync(candidateTs)) {
       return { url: pathToFileURL(candidateTs).href, shortCircuit: true };
