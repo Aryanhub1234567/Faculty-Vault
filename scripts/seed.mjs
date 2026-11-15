@@ -1,4 +1,39 @@
+import fs from "node:fs";
+import path from "node:path";
 import { PrismaClient } from "@prisma/client";
+
+// Load .env if present
+function loadEnv() {
+  const envPath = path.resolve(process.cwd(), ".env");
+  if (fs.existsSync(envPath)) {
+    const content = fs.readFileSync(envPath, "utf-8");
+    for (const line of content.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const eqIdx = trimmed.indexOf("=");
+      if (eqIdx === -1) continue;
+      const key = trimmed.slice(0, eqIdx).trim();
+      let val = trimmed.slice(eqIdx + 1).trim();
+      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+        val = val.slice(1, -1);
+      }
+      if (!process.env[key]) {
+        process.env[key] = val;
+      }
+    }
+  }
+}
+
+loadEnv();
+
+// Safety check: Prevent running demo seed in production environment
+const nodeEnv = (process.env.NODE_ENV || "").trim().toLowerCase();
+if (nodeEnv === "production") {
+  console.error("❌ Refusing to run demo seed script when NODE_ENV is 'production'.");
+  console.error("Demo seeding creates mock accounts, fabricated records, and test sync jobs.");
+  console.error("For production database initialization and bootstrapping, run 'npm run db:init:prod'.");
+  process.exit(1);
+}
 
 const prisma = new PrismaClient();
 
@@ -56,11 +91,7 @@ async function main() {
   const adminEmail = "admin@facultyvault.edu";
   const adminUser = await prisma.user.upsert({
     where: { email: adminEmail },
-    update: {
-      role: "ADMIN",
-      accountStatus: "APPROVED",
-      name: "Dean Academic Affairs",
-    },
+    update: {}, // Preserve existing role, accountStatus, and name to prevent unexpected reset
     create: {
       name: "Dean Academic Affairs",
       email: adminEmail,
@@ -90,11 +121,7 @@ async function main() {
   const facultyEmail = "dr.sharma@facultyvault.edu";
   const facultyUser = await prisma.user.upsert({
     where: { email: facultyEmail },
-    update: {
-      role: "FACULTY",
-      accountStatus: "APPROVED",
-      name: "Dr. Rajesh Sharma",
-    },
+    update: {}, // Preserve existing role and accountStatus
     create: {
       name: "Dr. Rajesh Sharma",
       email: facultyEmail,
@@ -124,11 +151,7 @@ async function main() {
   const faculty2Email = "prof.ananya@facultyvault.edu";
   const faculty2User = await prisma.user.upsert({
     where: { email: faculty2Email },
-    update: {
-      role: "FACULTY",
-      accountStatus: "APPROVED",
-      name: "Prof. Ananya Roy",
-    },
+    update: {}, // Preserve existing role and accountStatus
     create: {
       name: "Prof. Ananya Roy",
       email: faculty2Email,
@@ -452,21 +475,35 @@ async function main() {
     },
   });
 
-  // Also seed an audit log
-  await prisma.auditLog.create({
-    data: {
+  // Also seed an audit log idempotently
+  const existingAuditLog = await prisma.auditLog.findFirst({
+    where: {
       userId: facultyUser.id,
       action: "RECORD_CREATE",
       entityType: "Record",
       entityId: bookRecord.id,
-      details: JSON.stringify({
-        category: "BOOK",
-        title: "Architecting Modern Scalable Distributed Systems",
-        isbn: "978-0-13-468599-1",
-      }),
-      ipAddress: "127.0.0.1",
     },
   });
+
+  if (!existingAuditLog) {
+    await prisma.auditLog.create({
+      data: {
+        userId: facultyUser.id,
+        action: "RECORD_CREATE",
+        entityType: "Record",
+        entityId: bookRecord.id,
+        details: JSON.stringify({
+          category: "BOOK",
+          title: "Architecting Modern Scalable Distributed Systems",
+          isbn: "978-0-13-468599-1",
+        }),
+        ipAddress: "127.0.0.1",
+      },
+    });
+    console.log("✓ Sample audit log initialized");
+  } else {
+    console.log("✓ Sample audit log already exists (skipped duplicate creation)");
+  }
 
   console.log(`✓ Seeded records for all 6 categories (Conference, Patent, FDP, Research, Chapter, Books)`);
   console.log("🎉 Database seeding completed successfully!");

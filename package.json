@@ -23,7 +23,9 @@
     "prisma:studio:sqlite": "prisma studio --schema=prisma/schema.sqlite.prisma",
     "prisma:studio:postgres": "prisma studio --schema=prisma/schema.prisma",
     "db:init:local": "prisma db push --schema=prisma/schema.sqlite.prisma && node scripts/seed.mjs",
-    "db:init:prod": "prisma db push --schema=prisma/schema.prisma && node scripts/seed.mjs",
+    "db:init:dev": "node scripts/prisma-cli.mjs db push && node scripts/seed.mjs",
+    "db:init:prod": "node scripts/init-prod.mjs",
+    "db:bootstrap:prod": "node scripts/init-prod.mjs --skip-schema",
     "seed": "node scripts/seed.mjs",
     "test": "node --loader ./scripts/test-loader.mjs --test tests/*.test.mjs"
   },

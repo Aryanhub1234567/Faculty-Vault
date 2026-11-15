@@ -259,78 +259,178 @@ Result: All 30 routes compiled with 0 errors.
 
 ---
 
-## 9. Quick Start (Local Development)
+## 9. Database Initialization & Workflows
 
-Faculty Vault includes zero-config SQLite support for local development and offline testing without needing a local PostgreSQL instance.
+Faculty Vault cleanly separates development/demo initialization from production initialization.
+
+### A. Local SQLite Initialization (Zero-Config Development)
+
+Faculty Vault includes zero-config SQLite support for rapid local development and offline testing without needing a local PostgreSQL instance.
 
 ```bash
-# 1. Clone repository
+# 1. Clone repository & install dependencies
 git clone <repo-url> "Faculty Vault"
 cd "Faculty Vault"
-
-# 2. Install dependencies (automatically generates SQLite Prisma Client)
 npm install
 
-# 3. Configure environment
+# 2. Configure environment for SQLite
 cp .env.example .env
-# .env defaults to: DATABASE_URL="file:./dev.db"
+# Ensure .env has: DATABASE_URL="file:./dev.db" and NODE_ENV="development"
 
-# 4. Initialize local SQLite database & seed demo accounts
-npm run db:init:local
-# Or individually:
-# npm run prisma:push:sqlite
-# npm run seed
+# 3. Initialize SQLite schema and seed demo data
+npm run db:init:dev
+# (Or use the explicit shortcut: npm run db:init:local)
 
-# 5. Start dev server
+# 4. Start dev server
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) and sign in using one of the pre-seeded instant accounts (`admin@facultyvault.edu` or `dr.sharma@facultyvault.edu`) or connect via Google Workspace!
+
+Open [http://localhost:3000](http://localhost:3000) and sign in using one of the pre-seeded instant accounts (`admin@facultyvault.edu` or `dr.sharma@facultyvault.edu`).
+
+### B. Development PostgreSQL Initialization
+
+If you develop locally against a PostgreSQL instance (e.g., local Docker container or cloud dev branch):
+
+```bash
+# 1. In .env, set your development PostgreSQL connection string:
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/faculty_vault_dev?schema=public"
+NODE_ENV="development"
+
+# 2. Run development initialization
+npm run db:init:dev
+```
+
+`npm run db:init:dev` uses `scripts/prisma-cli.mjs` to auto-detect the PostgreSQL provider, synchronize the schema via `prisma db push`, and seed the isolated development database with demo data.
+
+### C. Production PostgreSQL Initialization
+
+Production initialization is strictly isolated from demonstration data and protected against accidental mock-data contamination.
+
+```bash
+# 1. Configure production environment variables in your deployment dashboard or .env.production:
+DATABASE_URL="postgresql://user:password@host:5432/faculty_vault?schema=public"
+NODE_ENV="production"
+INSTITUTE_NAME="Your Engineering College / Institute Name"
+INSTITUTE_CODE="INST-01"
+ADMIN_EMAILS="dean@institute.edu,director@institute.edu"
+INITIAL_ADMIN_EMAIL="dean@institute.edu"
+
+# 2. Run the production initialization workflow:
+npm run db:init:prod
+```
+
+`npm run db:init:prod` executes `scripts/init-prod.mjs`, which:
+1. Validates that `DATABASE_URL` is a PostgreSQL connection.
+2. Initializes the PostgreSQL schema (`prisma migrate deploy` if migrations exist, or `prisma db push`).
+3. Creates or verifies the actual institute from `INSTITUTE_NAME` and `INSTITUTE_CODE`.
+4. Initializes default academic sessions (`2022-23` through `2029-30`) without duplicating existing sessions.
+5. Creates or verifies the initial administrator user and profile using `INITIAL_ADMIN_EMAIL` / `ADMIN_EMAILS`.
+6. Enforces strict production integrity: **never** creates demo faculty accounts, fabricated records, mock Drive attachment references, demo audit logs, or synthetic Sheets sync jobs.
+7. Operates completely idempotently—safe to run repeatedly on new or existing deployments.
 
 ---
 
-## 10. Production Deployment (PostgreSQL)
+## 10. Demo Seeding vs. Production Bootstrap
 
-In production environments (Vercel, Railway, Docker, AWS, etc.), Faculty Vault runs on PostgreSQL using the enterprise schema (`prisma/schema.prisma`) with native enums and relational integrity.
+| Dimension | Development Demo Seed (`npm run db:init:dev` / `npm run seed`) | Production Bootstrap (`npm run db:init:prod`) |
+|---|---|---|
+| **Script** | `scripts/seed.mjs` | `scripts/init-prod.mjs` |
+| **Target Database** | SQLite (`dev.db`) or Dev PostgreSQL | PostgreSQL only (Neon, Supabase, RDS, etc.) |
+| **Production Protection** | **Hard-blocked** when `NODE_ENV=production` | Designed specifically for production/staging |
+| **Schema Initialization** | Auto-detected `prisma db push` | `prisma migrate deploy` or `prisma db push` |
+| **Institute** | Demo "Apex Institute of Technology & Engineering" (`NITE-01`) | Configured via `INSTITUTE_NAME` and `INSTITUTE_CODE` |
+| **Administrator Account** | Demo Admin (`admin@facultyvault.edu`) | Configured via `INITIAL_ADMIN_EMAIL` / `ADMIN_EMAILS` |
+| **Faculty Accounts** | 3 demo faculty (Sharma, Roy, Mehta) | **Zero** demo accounts (real faculty register via OAuth/SSO) |
+| **Academic Records** | 6 sample records (Conference, Patent, FDP, Research, Chapter, Book) | **Zero** fabricated records |
+| **Google Drive Attachments** | Mock Google Drive folder and file IDs | **Zero** mock attachments |
+| **Audit Logs** | Demo record creation audit log | **Zero** demonstration audit logs |
+| **Sheets Sync Jobs** | Synthetic `SUCCEEDED` sync job | **Zero** synthetic sync jobs |
+| **Idempotency** | Safe to re-run (deduplicates audit logs and accounts) | Safe to re-run (verifies existing institute, sessions, and admin) |
 
-### Environment Configuration
-Set the following environment variables in your deployment dashboard or `.env.production`:
-```env
-DATABASE_URL="postgresql://user:password@db.example.com:5432/faculty_vault?schema=public"
-NEXTAUTH_URL="https://your-domain.com"
-NEXTAUTH_SECRET="your-32-character-secret"
-GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com"
-GOOGLE_CLIENT_SECRET="your-client-secret"
-GOOGLE_REDIRECT_URI="https://your-domain.com/api/auth/google/callback"
-ADMIN_EMAILS="admin@institute.edu"
-```
+---
 
-### Database Initialization & Migration (Production)
+## 11. Migration-Baselining Procedure
+
+When deploying Faculty Vault to an existing production PostgreSQL database that was originally created or updated with `prisma db push`, or when transitioning from prototyping to version-controlled schema migrations, you must **baseline** your database.
+
+### Why Baselining is Required
+
+Prisma Migrate tracks migration history in a table named `_prisma_migrations`. If you run `prisma migrate dev` or `prisma migrate deploy` against an existing database that already contains tables but lacks this migration history table, Prisma cannot determine which migrations have already been applied and may attempt to recreate existing tables or prompt to reset the database (which would drop production data). Baselining registers the existing schema state as already applied.
+
+### Step-by-Step Baselining Procedure
+
+#### Step 1: Ensure Your Schema Matches the Database State
+Ensure `prisma/schema.prisma` reflects the exact desired database structure.
+
+#### Step 2: Create the Baseline Migration Directory
+Create a dedicated migration directory for the initial baseline:
+
+On Linux / macOS / Bash:
 ```bash
-# Push production schema to PostgreSQL
-npm run prisma:push:postgres
-
-# Or apply migrations in production CI/CD:
-npm run prisma:migrate:prod
-
-# Optional: Seed default academic sessions and initial administrator
-npm run seed
+mkdir -p prisma/migrations/0_init
 ```
 
-### Prisma Scripts Reference
+On Windows (PowerShell):
+```powershell
+New-Item -ItemType Directory -Path "prisma/migrations/0_init" -Force
+```
 
-Faculty Vault provides a smart CLI runner (`scripts/prisma-cli.mjs`) that automatically inspects `DATABASE_URL` and selects the matching schema, while also offering explicit commands:
+#### Step 3: Generate the Initial Migration SQL Script
+Generate a complete SQL script representing the entire schema without connecting to or altering the live database:
+
+```bash
+npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > prisma/migrations/0_init/migration.sql
+```
+
+Verify that `prisma/migrations/0_init/migration.sql` contains the complete DDL statements (`CREATE TABLE`, `CREATE TYPE`, `CREATE INDEX`, etc.).
+
+#### Step 4: Baseline the Existing Database
+Mark the `0_init` migration as already applied on your existing database so Prisma knows not to re-execute it:
+
+```bash
+npx prisma migrate resolve --applied 0_init --schema=prisma/schema.prisma
+```
+
+Prisma will record `0_init` in the `_prisma_migrations` table without executing the SQL script.
+
+#### Step 5: Verify Deployment on New Environments
+For fresh environments (e.g., CI test databases or new deployments), running:
+
+```bash
+npm run prisma:migrate:prod
+# or: npx prisma migrate deploy --schema=prisma/schema.prisma
+```
+
+will automatically apply `0_init` and any subsequent migrations in sequential order.
+
+#### Step 6: Ongoing Schema Evolution
+For future schema updates:
+- **In Development:** Edit `prisma/schema.prisma` and run `npm run prisma:migrate` (`prisma migrate dev`). Prisma will prompt for a migration name, generate a new timestamped migration directory, apply it to your development database, and regenerate the client.
+- **In Production / CI/CD:** Commit the generated migration folder to Git and run `npm run prisma:migrate:prod` (`prisma migrate deploy`) during production deployment before booting the application.
+
+---
+
+## 12. Scripts Reference
+
+Faculty Vault provides dedicated scripts for development, testing, and production operations:
 
 | Command | Target Datasource | Purpose |
 |---|---|---|
+| `npm run db:init:dev` | Auto-detected (SQLite or PostgreSQL) | One-step development initialization: pushes schema and seeds demo data idempotently |
+| `npm run db:init:local` | SQLite (`schema.sqlite.prisma`) | Explicit one-step SQLite schema push and demo database seeding |
+| `npm run db:init:prod` | PostgreSQL (`schema.prisma`) | Production initialization: initializes PostgreSQL schema and bootstraps real institute, administrator, and academic sessions without demo data |
+| `npm run db:bootstrap:prod` | PostgreSQL (`schema.prisma`) | Production bootstrap only (runs `init-prod.mjs --skip-schema`, useful when migrations are deployed separately in CI) |
+| `npm run seed` | Auto-detected (SQLite or PostgreSQL) | Seeds development database with demo data (blocked if `NODE_ENV=production`) |
 | `npm run prisma:generate` | Auto-detected | Generates `@prisma/client` from SQLite or PostgreSQL schema based on `DATABASE_URL` |
 | `npm run prisma:generate:sqlite` | SQLite (`schema.sqlite.prisma`) | Explicitly generates Prisma client for SQLite |
 | `npm run prisma:generate:postgres` | PostgreSQL (`schema.prisma`) | Explicitly generates Prisma client for PostgreSQL |
-| `npm run prisma:push` | Auto-detected | Pushes schema structure to active database |
+| `npm run prisma:push` | Auto-detected | Pushes schema structure directly to active database |
 | `npm run prisma:push:sqlite` | SQLite (`schema.sqlite.prisma`) | Pushes SQLite schema to `prisma/dev.db` |
-| `npm run prisma:push:postgres` | PostgreSQL (`schema.prisma`) | Pushes PostgreSQL schema to production database |
-| `npm run prisma:migrate:prod` | PostgreSQL (`schema.prisma`) | Runs `prisma migrate deploy` for production releases |
+| `npm run prisma:push:postgres` | PostgreSQL (`schema.prisma`) | Pushes PostgreSQL schema to PostgreSQL database |
+| `npm run prisma:migrate` | Auto-detected | Runs `prisma migrate dev` for iterative local development schema migrations |
+| `npm run prisma:migrate:prod` | PostgreSQL (`schema.prisma`) | Runs `prisma migrate deploy` for production release migrations |
 | `npm run prisma:studio` | Auto-detected | Opens Prisma Studio GUI for current database |
-| `npm run db:init:local` | SQLite (`schema.sqlite.prisma`) | One-step SQLite initialization and demo database seeding |
-| `npm run db:init:prod` | PostgreSQL (`schema.prisma`) | One-step PostgreSQL initialization and seeding |
-| `npm run build` | Auto-detected | Runs Prisma Client generation before Next.js production build |
+| `npm test` | Test runner | Runs Node.js test suite across all modules with ES module loader |
+| `npm run build` | Auto-detected | Generates Prisma Client and compiles Next.js production build |
+
 
