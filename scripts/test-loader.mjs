@@ -4,6 +4,11 @@ import fs from "node:fs";
 
 const srcDir = path.resolve(process.cwd(), "src");
 
+// By default in test runner, enable mock storage fallback for offline test suites unless in production
+if (process.env.NODE_ENV !== "production" && process.env.ENABLE_MOCK_STORAGE_FALLBACK === undefined) {
+  process.env.ENABLE_MOCK_STORAGE_FALLBACK = "true";
+}
+
 export async function resolve(specifier, context, nextResolve) {
   let target = specifier;
 

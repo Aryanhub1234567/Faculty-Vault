@@ -4,6 +4,8 @@ import {
   formatRecordForSheet,
   SHEET_TAB_NAMES,
   TAB_HEADERS,
+  validateSpreadsheet,
+  processSheetSyncJob,
 } from "../src/lib/google/sheets.ts";
 
 test("Google Sheets reporting: verify 6 tab names and common headers", () => {
@@ -102,4 +104,19 @@ test("Google Sheets row mapping for Conference", () => {
   assert.equal(rowValues[0], "REC-CONF-1001");
   assert.equal(rowValues[5], "Edge Intelligence Summit");
   assert.equal(rowValues[10], "INTERNATIONAL");
+});
+
+test("Google Sheets reporting: validates spreadsheet ID and rejects empty configuration", async () => {
+  await assert.rejects(
+    async () => {
+      await validateSpreadsheet("");
+    },
+    {
+      message: /GOOGLE_SHEETS_SPREADSHEET_ID is missing or empty/,
+    }
+  );
+
+  const missingResult = await processSheetSyncJob("non-existent-job-id");
+  assert.equal(missingResult.success, false);
+  assert.equal(missingResult.error, "Sync job not found");
 });

@@ -162,9 +162,15 @@ GOOGLE_REDIRECT_URI="http://localhost:3000/api/auth/google/callback"
 Because free Gmail accounts do not support Workspace Shared Drives, Faculty Vault utilizes the account's standard **My Drive**:
 
 ### Root Folder Management: `My Drive / Faculty Vault`
-1. **Zero Duplicate Root Folders:**
-   Faculty Vault automatically searches My Drive for an existing folder named `Faculty Vault` inside `root`. If found, it caches its Google Drive ID in PostgreSQL (`DriveFolder` table) and `.google-tokens.json`. If not found, it creates the folder once. Subsequent restarts always reuse the cached ID.
-2. **Deterministic Directory Tree:**
+1. **Canonical Root Folder Configuration (`GOOGLE_DRIVE_ROOT_FOLDER_ID`):**
+   Faculty Vault establishes `GOOGLE_DRIVE_ROOT_FOLDER_ID` as the single canonical root-folder configuration variable (`GOOGLE_DRIVE_FOLDER_ID` is preserved as a deprecated fallback).
+2. **Auto-Discovery & Zero Duplicate Root Folders:**
+   When `GOOGLE_DRIVE_ROOT_FOLDER_ID` is omitted or empty, Faculty Vault automatically searches My Drive for an existing folder named `Faculty Vault` inside `root`. If found, it extracts its Google Drive ID and webViewLink. If not found, it creates the folder under `root` once.
+3. **Database Persistence & Cross-Restart Reuse:**
+   The actual root folder ID is persisted in PostgreSQL (`DriveFolder` table with `folderPath="Faculty Vault"` and `folderType="ROOT"`) and `.google-tokens.json`. On subsequent application boots and server restarts, Faculty Vault reuses the cached root folder ID directly from PostgreSQL, avoiding redundant Drive API queries and preventing duplicate root folders.
+4. **Zero Fabricated IDs in Production:**
+   Faculty Vault enforces strict production integrity. In production environments (`NODE_ENV=production`), `ENABLE_MOCK_STORAGE_FALLBACK` is unconditionally disabled. Faculty Vault will never generate fabricated folder IDs (e.g., `mock_drive_...`) or fake Drive URLs. Real storage credentials and authorization are required.
+5. **Deterministic Directory Tree:**
    All uploads are filed inside nested subfolders:
    ```
    My Drive/
@@ -177,8 +183,16 @@ Because free Gmail accounts do not support Workspace Shared Drives, Faculty Vaul
                            └── REC-1001_Quantum_AI_Paper/
                                └── paper.pdf
    ```
-3. **No Root Clutter:** No application files are ever dumped directly into My Drive root.
-4. **Backend Streaming:** Files are streamed securely to authenticated users through `/api/files/[id]/preview` after verifying institute RBAC permissions.
+6. **No Root Clutter:** No application files are ever dumped directly into My Drive root.
+7. **Backend Streaming:** Files are streamed securely to authenticated users through `/api/files/[id]/preview` after verifying institute RBAC permissions.
+
+### Google Sheets Real-Time Reporting Configuration
+1. **Target Spreadsheet (`GOOGLE_SHEETS_SPREADSHEET_ID`):**
+   Faculty Vault maintains an asynchronous reporting queue (`SheetSyncJob`) to mirror academic records into a centralized Google Spreadsheet across six dedicated category tabs.
+2. **Pre-Sync Validation:**
+   Before attempting synchronization, the system validates the spreadsheet ID and verifies its accessibility. If the category tab does not exist in the spreadsheet, Faculty Vault automatically creates it and initializes it with standard column headers.
+3. **Clear Administrator-Facing Errors:**
+   If `GOOGLE_SHEETS_SPREADSHEET_ID` is missing, empty, or inaccessible, the sync job fails with an explicit configuration error (e.g. `Google Sheets reporting configuration error: GOOGLE_SHEETS_SPREADSHEET_ID is missing or empty`). It will never report a successful sync when credentials or spreadsheet IDs are missing. Administrators can review and retry failed jobs directly from the Admin Console.
 
 ---
 

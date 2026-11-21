@@ -39,8 +39,21 @@ let memoryTokensCache: StoredOAuthTokens | null = null;
  */
 export const DEFAULT_OAUTH_SCOPES = [
   "https://www.googleapis.com/auth/drive.file",
+  "https://www.googleapis.com/auth/spreadsheets",
   "https://www.googleapis.com/auth/userinfo.email",
 ];
+
+/**
+ * Check if mock storage fallback is permitted.
+ * Strictly forbidden in production (NODE_ENV=production).
+ * In development or testing, permitted ONLY when explicitly enabled via ENABLE_MOCK_STORAGE_FALLBACK=true.
+ */
+export function isMockStorageFallbackAllowed(): boolean {
+  if (process.env.NODE_ENV === "production") {
+    return false;
+  }
+  return process.env.ENABLE_MOCK_STORAGE_FALLBACK === "true";
+}
 
 /**
  * Load Google OAuth credentials from environment variables with backwards-compatible fallbacks
@@ -55,9 +68,10 @@ export function getGoogleOAuthConfig(): GoogleOAuthConfig {
     `${baseUrl}/api/auth/google/callback`
   ).trim();
 
+  // Canonical: GOOGLE_DRIVE_ROOT_FOLDER_ID. Fallback (legacy): GOOGLE_DRIVE_FOLDER_ID
   const rootFolderId = (
-    process.env.GOOGLE_DRIVE_FOLDER_ID ||
     process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID ||
+    process.env.GOOGLE_DRIVE_FOLDER_ID ||
     ""
   ).trim();
 
@@ -305,14 +319,17 @@ export async function getGoogleDriveOAuthStatus() {
   const hasRefreshToken = Boolean(tokens?.refresh_token || config.envRefreshToken);
 
   if (!configured) {
+    const isMock = isMockStorageFallbackAllowed();
     return {
       configured: false,
       connected: false,
       accountEmail: null,
       rootFolderId: null,
-      storageType: "Mock Storage Fallback",
-      isMock: true,
-      message: "Google OAuth Client ID & Secret not configured in environment.",
+      storageType: isMock ? "Mock Storage Fallback" : "Google Drive (Not Configured)",
+      isMock,
+      message: isMock
+        ? "Mock storage fallback active (Development mode only)."
+        : "Google OAuth credentials not configured in environment.",
     };
   }
 

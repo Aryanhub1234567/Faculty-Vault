@@ -1,5 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+
+// Allow mock storage during unit test runs
+process.env.ENABLE_MOCK_STORAGE_FALLBACK = "true";
+// Isolate token file to scratch directory so unit tests never clear or overwrite live tokens
+process.env.GOOGLE_TOKENS_FILE_PATH = path.resolve(process.cwd(), "scratch/test-tokens.json");
+
 import fs from "node:fs";
 import path from "node:path";
 import {
@@ -12,6 +18,7 @@ import {
   clearStoredTokens,
   getGoogleDriveOAuthStatus,
   DEFAULT_OAUTH_SCOPES,
+  isMockStorageFallbackAllowed,
 } from "../src/lib/google/oauth.ts";
 import {
   getRootFolderId,
@@ -190,4 +197,51 @@ test("Security & RBAC: Ensure central credentials and tokens are protected", () 
   // Verify that tokens object properties match expected shape and credentials remain isolated
   assert.ok(stored.account_email);
   clearStoredTokens();
+});
+
+test("Google Drive Configuration: GOOGLE_DRIVE_ROOT_FOLDER_ID is canonical and prioritized over legacy GOOGLE_DRIVE_FOLDER_ID", () => {
+  const origRoot = process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID;
+  const origLegacy = process.env.GOOGLE_DRIVE_FOLDER_ID;
+
+  try {
+    // Both set: canonical GOOGLE_DRIVE_ROOT_FOLDER_ID wins
+    process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID = "canonical-root-folder-id";
+    process.env.GOOGLE_DRIVE_FOLDER_ID = "legacy-folder-id";
+    const config1 = getGoogleOAuthConfig();
+    assert.equal(config1.rootFolderId, "canonical-root-folder-id");
+
+    // Only legacy set: backwards compatible fallback
+    delete process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID;
+    process.env.GOOGLE_DRIVE_FOLDER_ID = "legacy-folder-id";
+    const config2 = getGoogleOAuthConfig();
+    assert.equal(config2.rootFolderId, "legacy-folder-id");
+  } finally {
+    process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID = origRoot;
+    process.env.GOOGLE_DRIVE_FOLDER_ID = origLegacy;
+  }
+});
+
+test("Google Drive Security: ENABLE_MOCK_STORAGE_FALLBACK is strictly disabled in production", () => {
+  const origNodeEnv = process.env.NODE_ENV;
+  const origMock = process.env.ENABLE_MOCK_STORAGE_FALLBACK;
+
+  try {
+    process.env.NODE_ENV = "production";
+    process.env.ENABLE_MOCK_STORAGE_FALLBACK = "true";
+    assert.equal(isMockStorageFallbackAllowed(), false, "Must return false when NODE_ENV is production");
+
+    process.env.NODE_ENV = "development";
+    process.env.ENABLE_MOCK_STORAGE_FALLBACK = "true";
+    assert.equal(isMockStorageFallbackAllowed(), true);
+
+    process.env.ENABLE_MOCK_STORAGE_FALLBACK = "false";
+    assert.equal(isMockStorageFallbackAllowed(), false);
+  } finally {
+    process.env.NODE_ENV = origNodeEnv;
+    if (origMock !== undefined) {
+      process.env.ENABLE_MOCK_STORAGE_FALLBACK = origMock;
+    } else {
+      process.env.ENABLE_MOCK_STORAGE_FALLBACK = "true";
+    }
+  }
 });

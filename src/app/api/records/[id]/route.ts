@@ -47,13 +47,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
       const fileEntries = formData.getAll("files");
       for (const entry of fileEntries) {
-        if (entry instanceof File) {
-          const arrayBuffer = await entry.arrayBuffer();
+        if (entry && (entry instanceof File || typeof (entry as any).arrayBuffer === "function")) {
+          const arrayBuffer = await (entry as any).arrayBuffer();
           newFiles.push({
-            name: entry.name,
+            name: (entry as any).name || "attachment",
             buffer: Buffer.from(arrayBuffer),
-            mimeType: entry.type || "application/octet-stream",
-            size: entry.size,
+            mimeType: (entry as any).type || "application/octet-stream",
+            size: (entry as any).size ?? arrayBuffer.byteLength,
           });
         }
       }

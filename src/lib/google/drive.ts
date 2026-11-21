@@ -1,3 +1,4 @@
+import { Readable } from "node:stream";
 import { google } from "googleapis";
 import { prisma } from "@/lib/db/prisma";
 import {
@@ -5,6 +6,7 @@ import {
   loadStoredTokens,
   saveStoredTokens,
   getGoogleOAuthConfig,
+  isMockStorageFallbackAllowed,
 } from "@/lib/google/oauth";
 
 export interface DriveUploadResult {
@@ -55,7 +57,7 @@ export function isGoogleDriveConfigured(): boolean {
   const hasServiceAccount = Boolean(
     process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
       process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY &&
-      (process.env.GOOGLE_DRIVE_FOLDER_ID || process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID)
+      (process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID || process.env.GOOGLE_DRIVE_FOLDER_ID)
   );
 
   return hasServiceAccount;
@@ -99,12 +101,12 @@ export function getDriveClient() {
 
 /**
  * Resolves or creates the central Faculty Vault root folder in My Drive.
- * Avoids creating duplicate root folders on repeated server restarts.
+ * Avoids creating duplicate root folders on repeated server restarts by caching in PostgreSQL.
  */
 export async function getRootFolderId(): Promise<string> {
   const config = getGoogleOAuthConfig();
 
-  // 1. Explicit folder ID configured in environment
+  // 1. Explicit canonical folder ID configured in environment
   if (config.rootFolderId) {
     return config.rootFolderId;
   }
@@ -112,16 +114,21 @@ export async function getRootFolderId(): Promise<string> {
   // 2. Check stored tokens
   const tokens = loadStoredTokens();
   if (tokens?.root_folder_id) {
-    return tokens.root_folder_id;
+    if (isMockStorageFallbackAllowed() || !tokens.root_folder_id.startsWith("mock_")) {
+      return tokens.root_folder_id;
+    }
   }
 
-  // 3. Check database cache
+  // 3. Check PostgreSQL database cache (reused across application restarts)
   const cachedRoot = await prisma.driveFolder.findFirst({
     where: {
       OR: [
         { folderType: "ROOT" },
         { folderPath: "Faculty Vault" },
       ],
+      ...(!isMockStorageFallbackAllowed()
+        ? { NOT: { googleDriveFolderId: { startsWith: "mock_" } } }
+        : {}),
     },
   });
 
@@ -130,22 +137,28 @@ export async function getRootFolderId(): Promise<string> {
     return cachedRoot.googleDriveFolderId;
   }
 
-  // 4. In mock mode, generate deterministic mock root ID
   const drive = getDriveClient();
+
+  // 4. In mock mode (if allowed in development/test), generate deterministic mock root ID
   if (!drive) {
-    const mockRootId = "mock_drive_root_faculty_vault";
-    await prisma.driveFolder.upsert({
-      where: { folderPath: "Faculty Vault" },
-      update: { googleDriveFolderId: mockRootId, folderType: "ROOT" },
-      create: {
-        folderPath: "Faculty Vault",
-        googleDriveFolderId: mockRootId,
-        folderType: "ROOT",
-        webViewLink: `https://drive.google.com/drive/folders/${mockRootId}`,
-      },
-    });
-    saveStoredTokens({ root_folder_id: mockRootId });
-    return mockRootId;
+    if (isMockStorageFallbackAllowed()) {
+      const mockRootId = "mock_drive_root_faculty_vault";
+      await prisma.driveFolder.upsert({
+        where: { folderPath: "Faculty Vault" },
+        update: { googleDriveFolderId: mockRootId, folderType: "ROOT" },
+        create: {
+          folderPath: "Faculty Vault",
+          googleDriveFolderId: mockRootId,
+          folderType: "ROOT",
+          webViewLink: `https://drive.google.com/drive/folders/${mockRootId}`,
+        },
+      });
+      saveStoredTokens({ root_folder_id: mockRootId });
+      return mockRootId;
+    }
+    throw new Error(
+      "Google Drive root folder could not be resolved: Google Drive is not connected or configured, and mock storage fallback is disabled in this environment. Please connect the central Google account in Administrator settings."
+    );
   }
 
   // 5. Query Google Drive My Drive for existing "Faculty Vault" folder
@@ -153,6 +166,8 @@ export async function getRootFolderId(): Promise<string> {
     q: "mimeType = 'application/vnd.google-apps.folder' and name = 'Faculty Vault' and trashed = false and 'root' in parents",
     spaces: "drive",
     fields: "files(id, name, webViewLink)",
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
   });
 
   let rootId: string;
@@ -170,13 +185,14 @@ export async function getRootFolderId(): Promise<string> {
         parents: ["root"],
       },
       fields: "id, name, webViewLink",
+      supportsAllDrives: true,
     });
 
     rootId = createRes.data.id!;
     webViewLink = createRes.data.webViewLink || undefined;
   }
 
-  // Cache in PostgreSQL and tokens file
+  // 6. Cache actual root folder ID in PostgreSQL and tokens file
   await prisma.driveFolder.upsert({
     where: { folderPath: "Faculty Vault" },
     update: {
@@ -262,38 +278,52 @@ export async function getOrCreateDriveFolder(
   });
 
   if (cached) {
-    return {
-      folderId: cached.googleDriveFolderId,
-      folderPath: cached.folderPath,
-      webViewLink: cached.webViewLink || undefined,
-    };
+    if (isMockStorageFallbackAllowed() || !cached.googleDriveFolderId.startsWith("mock_")) {
+      return {
+        folderId: cached.googleDriveFolderId,
+        folderPath: cached.folderPath,
+        webViewLink: cached.webViewLink || undefined,
+      };
+    }
   }
 
-  // 2. If credentials not configured, use deterministic mock Drive folder
+  // 2. If credentials not configured, verify mock mode authorization
   const drive = getDriveClient();
   if (!drive) {
-    const mockFolderId = `mock_drive_folder_${Buffer.from(normalizedPath).toString("base64url").slice(0, 24)}`;
-    const mockWebView = `https://drive.google.com/drive/folders/${mockFolderId}`;
+    if (isMockStorageFallbackAllowed()) {
+      const mockFolderId = `mock_drive_folder_${Buffer.from(normalizedPath).toString("base64url").slice(0, 24)}`;
+      const mockWebView = `https://drive.google.com/drive/folders/${mockFolderId}`;
 
-    const created = await prisma.driveFolder.create({
-      data: {
-        folderPath: normalizedPath,
-        googleDriveFolderId: mockFolderId,
-        folderType: "RECORD",
+      const created = await prisma.driveFolder.upsert({
+        where: { folderPath: normalizedPath },
+        update: {
+          googleDriveFolderId: mockFolderId,
+          folderType: "RECORD",
+          webViewLink: mockWebView,
+        },
+        create: {
+          folderPath: normalizedPath,
+          googleDriveFolderId: mockFolderId,
+          folderType: "RECORD",
+          webViewLink: mockWebView,
+          instituteId: options?.instituteId,
+          facultyProfileId: options?.facultyProfileId,
+          academicSessionId: options?.academicSessionId,
+          category: options?.category,
+        },
+      });
+
+      return {
+        folderId: created.googleDriveFolderId,
+        folderPath: created.folderPath,
         webViewLink: mockWebView,
-        instituteId: options?.instituteId,
-        facultyProfileId: options?.facultyProfileId,
-        academicSessionId: options?.academicSessionId,
-        category: options?.category,
-      },
-    });
+        isMock: true,
+      };
+    }
 
-    return {
-      folderId: created.googleDriveFolderId,
-      folderPath: created.folderPath,
-      webViewLink: mockWebView,
-      isMock: true,
-    };
+    throw new Error(
+      `Cannot resolve or create Google Drive folder "${normalizedPath}": Google Drive is not connected or configured, and mock storage fallback is disabled in this environment.`
+    );
   }
 
   // 3. Resolve central "Faculty Vault" root folder ID
@@ -402,24 +432,26 @@ export async function uploadFileToDrive(
 ): Promise<DriveUploadResult> {
   const drive = getDriveClient();
 
-  // If Drive not configured, return mock upload metadata
+  // If Drive not configured, return mock upload metadata only if explicitly allowed
   if (!drive) {
-    const mockFileId = `mock_file_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-    return {
-      fileId: mockFileId,
-      fileName,
-      mimeType,
-      fileSize: fileBuffer.length,
-      webViewLink: `https://drive.google.com/file/d/${mockFileId}/view`,
-      parentFolderId,
-      isMock: true,
-    };
+    if (isMockStorageFallbackAllowed()) {
+      const mockFileId = `mock_file_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+      return {
+        fileId: mockFileId,
+        fileName,
+        mimeType,
+        fileSize: fileBuffer.length,
+        webViewLink: `https://drive.google.com/file/d/${mockFileId}/view`,
+        parentFolderId,
+        isMock: true,
+      };
+    }
+    throw new Error(
+      `Cannot upload document "${fileName}": Google Drive storage is not configured or authorized, and mock storage fallback is disabled in this environment.`
+    );
   }
 
-  const { Readable } = await import("stream");
-  const mediaStream = new Readable();
-  mediaStream.push(fileBuffer);
-  mediaStream.push(null);
+  const uploadStream = Readable.from([fileBuffer]);
 
   const response = await drive.files.create({
     requestBody: {
@@ -428,7 +460,7 @@ export async function uploadFileToDrive(
     },
     media: {
       mimeType,
-      body: mediaStream,
+      body: uploadStream,
     },
     fields: "id, name, mimeType, size, webViewLink",
     supportsAllDrives: true,
@@ -453,14 +485,19 @@ export async function uploadFileToDrive(
 export async function getFileMetadata(fileId: string) {
   const drive = getDriveClient();
   if (!drive) {
-    return {
-      id: fileId,
-      name: "mock_document.pdf",
-      mimeType: "application/pdf",
-      size: 1024,
-      webViewLink: `https://drive.google.com/file/d/${fileId}/view`,
-      isMock: true,
-    };
+    if (isMockStorageFallbackAllowed()) {
+      return {
+        id: fileId,
+        name: "mock_document.pdf",
+        mimeType: "application/pdf",
+        size: 1024,
+        webViewLink: `https://drive.google.com/file/d/${fileId}/view`,
+        isMock: true,
+      };
+    }
+    throw new Error(
+      `Cannot retrieve file metadata for "${fileId}": Google Drive is not configured or authorized, and mock storage fallback is disabled.`
+    );
   }
 
   const res = await drive.files.get({
@@ -478,7 +515,12 @@ export async function getFileMetadata(fileId: string) {
 export async function downloadFileFromDrive(fileId: string): Promise<Buffer> {
   const drive = getDriveClient();
   if (!drive) {
-    return Buffer.from(`Mock document binary content for ${fileId}`);
+    if (isMockStorageFallbackAllowed()) {
+      return Buffer.from(`Mock document binary content for ${fileId}`);
+    }
+    throw new Error(
+      `Cannot download document "${fileId}": Google Drive is not configured or authorized, and mock storage fallback is disabled.`
+    );
   }
 
   const res = await drive.files.get(
@@ -495,11 +537,12 @@ export async function downloadFileFromDrive(fileId: string): Promise<Buffer> {
 export async function getDriveFileStream(fileId: string) {
   const drive = getDriveClient();
   if (!drive) {
-    const { Readable } = await import("stream");
-    const stream = new Readable();
-    stream.push(Buffer.from(`Mock document stream for ${fileId}`));
-    stream.push(null);
-    return stream;
+    if (isMockStorageFallbackAllowed()) {
+      return Readable.from([Buffer.from(`Mock document stream for ${fileId}`)]);
+    }
+    throw new Error(
+      `Cannot stream document "${fileId}": Google Drive is not configured or authorized, and mock storage fallback is disabled.`
+    );
   }
 
   const res = await drive.files.get(
@@ -521,11 +564,16 @@ export async function listDriveFiles(options?: {
 }) {
   const drive = getDriveClient();
   if (!drive) {
-    return {
-      files: [],
-      nextPageToken: null,
-      isMock: true,
-    };
+    if (isMockStorageFallbackAllowed()) {
+      return {
+        files: [],
+        nextPageToken: null,
+        isMock: true,
+      };
+    }
+    throw new Error(
+      "Cannot list Google Drive files: Google Drive is not configured or authorized, and mock storage fallback is disabled."
+    );
   }
 
   let q = "trashed = false";
@@ -561,13 +609,18 @@ export async function createDriveFolder(folderName: string, parentFolderId: stri
   const safeName = sanitizeFolderName(folderName);
 
   if (!drive) {
-    const mockId = `mock_folder_${Date.now()}`;
-    return {
-      id: mockId,
-      name: safeName,
-      webViewLink: `https://drive.google.com/drive/folders/${mockId}`,
-      isMock: true,
-    };
+    if (isMockStorageFallbackAllowed()) {
+      const mockId = `mock_folder_${Date.now()}`;
+      return {
+        id: mockId,
+        name: safeName,
+        webViewLink: `https://drive.google.com/drive/folders/${mockId}`,
+        isMock: true,
+      };
+    }
+    throw new Error(
+      `Cannot create folder "${folderName}": Google Drive is not configured or authorized, and mock storage fallback is disabled.`
+    );
   }
 
   const res = await drive.files.create({
@@ -593,7 +646,12 @@ export async function moveDriveFile(
 ) {
   const drive = getDriveClient();
   if (!drive) {
-    return { id: fileId, parents: [newParentFolderId], isMock: true };
+    if (isMockStorageFallbackAllowed()) {
+      return { id: fileId, parents: [newParentFolderId], isMock: true };
+    }
+    throw new Error(
+      `Cannot move document "${fileId}": Google Drive is not configured or authorized, and mock storage fallback is disabled.`
+    );
   }
 
   let previousParents = currentParentFolderId;
@@ -625,7 +683,12 @@ export async function renameDriveFile(fileId: string, newName: string) {
   const safeName = sanitizeFolderName(newName);
 
   if (!drive) {
-    return { id: fileId, name: safeName, isMock: true };
+    if (isMockStorageFallbackAllowed()) {
+      return { id: fileId, name: safeName, isMock: true };
+    }
+    throw new Error(
+      `Cannot rename document "${fileId}": Google Drive is not configured or authorized, and mock storage fallback is disabled.`
+    );
   }
 
   const res = await drive.files.update({
@@ -646,7 +709,12 @@ export async function renameDriveFile(fileId: string, newName: string) {
 export async function deleteDriveFile(fileId: string, permanent = false) {
   const drive = getDriveClient();
   if (!drive) {
-    return { id: fileId, deleted: true, isMock: true };
+    if (isMockStorageFallbackAllowed()) {
+      return { id: fileId, deleted: true, isMock: true };
+    }
+    throw new Error(
+      `Cannot delete document "${fileId}": Google Drive is not configured or authorized, and mock storage fallback is disabled.`
+    );
   }
 
   if (permanent) {
@@ -674,7 +742,12 @@ export async function deleteDriveFile(fileId: string, permanent = false) {
 export async function searchDriveFiles(query: string, parentFolderId?: string) {
   const drive = getDriveClient();
   if (!drive) {
-    return { files: [], isMock: true };
+    if (isMockStorageFallbackAllowed()) {
+      return { files: [], isMock: true };
+    }
+    throw new Error(
+      "Cannot search Google Drive: Google Drive is not configured or authorized, and mock storage fallback is disabled."
+    );
   }
 
   const escaped = query.replace(/\\/g, "\\\\").replace(/'/g, "\\'");

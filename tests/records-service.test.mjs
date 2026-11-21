@@ -1,5 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+
+// Allow mock storage during unit test runs
+process.env.ENABLE_MOCK_STORAGE_FALLBACK = "true";
+
 import { prisma } from "../src/lib/db/prisma.ts";
 import { RecordsService } from "../src/server/services/records.service.ts";
 
@@ -19,6 +23,30 @@ test("Database & RBAC: Verify academic session filtering and faculty record owne
   });
   assert.ok(faculty1);
   assert.ok(faculty2);
+
+  // Ensure faculty1 has at least one record in this session
+  let existingF1 = await prisma.record.findFirst({
+    where: { facultyProfileId: faculty1.id, academicSessionId: session2627.id, deletedAt: null },
+  });
+  if (!existingF1) {
+    const user1 = await prisma.user.findFirst({ where: { facultyProfile: { id: faculty1.id } } });
+    if (user1) {
+      await RecordsService.createRecord({
+        userId: user1.id,
+        category: "CONFERENCE",
+        academicSessionId: session2627.id,
+        details: {
+          title: "RBAC Test Conference",
+          topic: "Computer Science",
+          organizer: "IEEE",
+          fromDate: "2026-10-01",
+          toDate: "2026-10-03",
+          nationality: "NATIONAL",
+        },
+        files: [],
+      });
+    }
+  }
 
   // 3. Query records scoped to Faculty 1
   const resultF1 = await RecordsService.getRecords({
